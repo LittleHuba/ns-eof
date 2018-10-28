@@ -13,8 +13,8 @@
 #include <vtk/vtkPointData.h>
 #include <vtk/vtkCellData.h>
 #include <vtk/vtkDoubleArray.h>
-#include <vtk/vtkXMLStructuredGridWriter.h>
-#include <vtk/vtkStructuredGrid.h>
+#include <vtk/vtkXMLPolyDataWriter.h>
+#include <vtk/vtkPolyData.h>
 #include <vtk/vtkSmartPointer.h>
 
 /** Stencil for writting VTK files
@@ -22,11 +22,11 @@
  * When iterated with, creates a VTK file.
  */
 class VTKStencil : public FieldStencil<FlowField> {
-    vtkSmartPointer<vtkStructuredGrid> _structuredGrid;
+    vtkSmartPointer<vtkPolyData> _polyData;
     vtkSmartPointer<vtkPoints> _points;
     vtkSmartPointer<vtkDoubleArray> _pressureScalars;
     vtkSmartPointer<vtkDoubleArray> _velocityVectors;
-    vtkSmartPointer<vtkXMLStructuredGridWriter> _writer;
+    vtkSmartPointer<vtkXMLPolyDataWriter> _writer;
 
     public:
 

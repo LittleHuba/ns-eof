@@ -2,26 +2,28 @@ cmake_minimum_required(VERSION 3.12)
 project(codeframe)
 
 list(APPEND CMAKE_MODULE_PATH "${codeframe_SOURCE_DIR}/cmake")
-
-set(CMAKE_CXX_STANDARD 14)
-
-find_package(MPI REQUIRED)
-include_directories(${MPI_INCLUDE_PATH})
-
-find_package(PETSc REQUIRED)
-include_directories(${PETSC_INCLUDES})
-
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+list(APPEND CMAKE_MODULE_PATH "${codeframe_SOURCE_DIR}/cmake-modules")
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_COMPILER mpicxx)
+
+find_package(PETSc COMPONENTS CXX)
+
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 
 include_directories(.)
 include_directories(3rdparty/tinyxml2)
 include_directories(parallelManagers)
 include_directories(solvers)
 include_directories(stencils)
+include_directories(${PETSC_INCLUDES})
+
+add_definitions(${PETSC_DEFINITIONS})
+add_definitions(-g)
 
 add_executable(codeframe
         3rdparty/tinyxml2/tinyxml2.cpp
@@ -79,8 +81,7 @@ add_executable(codeframe
         Simulation.h
         Stencil.h)
 
-target_link_libraries(codeframe ${VTK_LIBRARIES})
-target_link_libraries(codeframe ${MPI_LIBRARIES})
+target_link_libraries(codeframe ${PETSC_LIBRARIES} ${VTK_LIBRARIES})
 
 if(MPI_COMPILE_FLAGS)
       set_target_properties(codeframe PROPERTIES
