@@ -1,20 +1,21 @@
 cmake_minimum_required(VERSION 3.12)
 project(codeframe)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(APPEND CMAKE_MODULE_PATH "${codeframe_SOURCE_DIR}/cmake")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 
-find_package(PETsc REQUIRED)
+find_package(PETSc REQUIRED)
 include_directories(${PETSC_INCLUDES})
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include_directories(.)
 include_directories(3rdparty/tinyxml2)
