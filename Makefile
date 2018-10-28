@@ -1,5 +1,5 @@
 #### The petsc environment can also be fixed in the makefile
-PETSC_DIR=/home/ulrich/petsc-3.5.4
+PETSC_DIR=/usr/local
 # PETSC_ARCH=arch-darwin-c-debug
 # PETSC_DIR = 
 # PETSC_ARCH = 
@@ -26,7 +26,7 @@ NSOBJ = FlowField.o LinearSolver.o Meshsize.o\
 stencils/MaxUStencil.o stencils/MovingWallStencils.o stencils/PeriodicBoundaryStencils.o\
 stencils/FGHStencil.o solvers/SORSolver.o solvers/PetscSolver.o \
 stencils/RHSStencil.o stencils/VelocityStencil.o \
-parallelManagers/PetscParallelConfiguration.o\
+stencils/VTKStencil.o parallelManagers/PetscParallelConfiguration.o\
 GlobalBoundaryFactory.o\
 stencils/BFStepInitStencil.o stencils/NeumannBoundaryStencils.o stencils/BFInputStencils.o stencils/ObstacleStencil.o\
 

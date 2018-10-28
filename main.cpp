@@ -65,7 +65,8 @@ int main (int argc, char *argv[]) {
     FLOAT timeStdOut=parameters.stdOut.interval;
     int timeSteps = 0;
 
-    // TODO WS1: plot initial state
+    // plot initial state
+    simulation->plotVTK(timeSteps);
 
     // time loop
     while (time < parameters.simulation.finalTime){
@@ -80,11 +81,11 @@ int main (int argc, char *argv[]) {
                         parameters.timestep.dt << std::endl;
           timeStdOut += parameters.stdOut.interval;
       }
-      // TODO WS1: trigger VTK output
+      // trigger VTK output
+      simulation->plotVTK(timeSteps + 1);
+
       timeSteps++;
     }
-
-    // TODO WS1: plot final output
 
     delete simulation; simulation=NULL;
     delete flowField;  flowField= NULL;

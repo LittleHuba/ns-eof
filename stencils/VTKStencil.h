@@ -8,12 +8,25 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vtk/vtkCellArray.h>
+#include <vtk/vtkPoints.h>
+#include <vtk/vtkPointData.h>
+#include <vtk/vtkCellData.h>
+#include <vtk/vtkDoubleArray.h>
+#include <vtk/vtkXMLStructuredGridWriter.h>
+#include <vtk/vtkStructuredGrid.h>
+#include <vtk/vtkSmartPointer.h>
 
-/** TODO WS1: Stencil for writting VTK files
+/** Stencil for writting VTK files
  *
  * When iterated with, creates a VTK file.
  */
 class VTKStencil : public FieldStencil<FlowField> {
+    vtkSmartPointer<vtkStructuredGrid> _structuredGrid;
+    vtkSmartPointer<vtkPoints> _points;
+    vtkSmartPointer<vtkDoubleArray> _pressureScalars;
+    vtkSmartPointer<vtkDoubleArray> _velocityVectors;
+    vtkSmartPointer<vtkXMLStructuredGridWriter> _writer;
 
     public:
 
@@ -23,12 +36,12 @@ class VTKStencil : public FieldStencil<FlowField> {
          */
         VTKStencil ( const Parameters & parameters );
 
-        /** 2D operation for one position
-         *
-         * @param flowField State of the flow field
-         * @param i Position in the x direction
-         * @param j Position in the y direction
-         */
+    /** 2D operation for one position
+     *
+     * @param flowField State of the flow field
+     * @param i Position in the x direction
+     * @param j Position in the y direction
+     */
         void apply ( FlowField & flowField, int i, int j );
 
         /** 3D operation for one position
@@ -44,6 +57,8 @@ class VTKStencil : public FieldStencil<FlowField> {
          * @param flowField Flow field to be written
          */
         void write ( FlowField & flowField, int timeStep );
+
+    ~VTKStencil() override;
 
 };
 

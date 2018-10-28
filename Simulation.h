@@ -3,6 +3,7 @@
 
 #include <petscksp.h>
 #include <float.h>
+#include <mpi.h>
 #include "FlowField.h"
 #include "stencils/FGHStencil.h"
 #include "stencils/MovingWallStencils.h"
@@ -52,6 +53,7 @@ class Simulation {
     FieldIterator<FlowField> _velocityIterator;
     FieldIterator<FlowField> _obstacleIterator;
 
+    // Create VTKStencil and respective iterator
     VTKStencil _vtkStencil;
     FieldIterator<FlowField> _vtkIterator;
 
@@ -141,13 +143,15 @@ class Simulation {
         // TODO WS2: communicate velocity values
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
+
     }
 
-    /** TODO WS1: plots the flow field. */
+    /** WS1: plots the flow field. */
     virtual void plotVTK(int timeStep){
-        // create VTKStencil and respective iterator; iterate stencil
-        // over _flowField and write flow field information to vtk file
+        // iterate stencil over _flowField
         _vtkIterator.iterate();
+        // write flow field information to vtk file
+        _vtkStencil.write(_flowField, timeStep);
     }
 
   protected:

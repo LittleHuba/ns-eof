@@ -2,6 +2,19 @@ cmake_minimum_required(VERSION 3.12)
 project(codeframe)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+find_package(MPI REQUIRED)
+include_directories(${MPI_INCLUDE_PATH})
+
+find_package(PETsc REQUIRED)
+include_directories(${PETSC_INCLUDES})
+
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 
 include_directories(.)
 include_directories(3rdparty/tinyxml2)
@@ -41,6 +54,7 @@ add_executable(codeframe
         stencils/VelocityStencil.cpp
         stencils/VelocityStencil.h
         stencils/VTKStencil.h
+        stencils/VTKStencil.cpp
         Configuration.cpp
         Configuration.h
         DataStructures.cpp
@@ -62,4 +76,17 @@ add_executable(codeframe
         SimpleTimer.cpp
         SimpleTimer.h
         Simulation.h
-        Stencil.h stencils/VTKStencil.cpp)
+        Stencil.h)
+
+target_link_libraries(codeframe ${VTK_LIBRARIES})
+target_link_libraries(codeframe ${MPI_LIBRARIES})
+
+if(MPI_COMPILE_FLAGS)
+      set_target_properties(codeframe PROPERTIES
+              COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+endif()
+
+if(MPI_LINK_FLAGS)
+    set_target_properties(codeframe PROPERTIES
+            LINK_FLAGS "${MPI_LINK_FLAGS}")
+endif()
