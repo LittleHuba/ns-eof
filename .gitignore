@@ -87,10 +87,5 @@ fabric.properties
 *.app
 ns
 
-Würde .DS_Store löschen
-Würde .gitignore löschen
-Würde .idea/workspace.xml löschen
-Würde cmake-build-debug/ löschen
-Würde parallelManagers/.DS_Store löschen
-Würde solvers/.DS_Store löschen
-Würde stencils/.DS_Store löschen
+# Output
+tryout/*
