@@ -1,93 +1,136 @@
 #include "VTKStencil.h"
 
 VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) {
-    // Create the structured grid
-    _polyData = vtkSmartPointer<vtkPolyData>::New();
+    // Get some initial information about the grid
+    int cellsX = parameters.parallel.localSize[0];
+    int cellsY = parameters.parallel.localSize[1];
+    int cellsZ = parameters.parallel.localSize[2];
 
-    // Create the points for the grid
-    _points = vtkSmartPointer<vtkPoints>::New();
+    int pointsX = cellsX + 1;
+    int pointsY = cellsY + 1;
+    int pointsZ = cellsZ + 1;
+
+    // Write the header of the file
+    this->_pointsStream.precision(6);
+    this->_pointsStream << std::fixed;
+    this->_pointsStream << "# vtk DataFile Version 2.0" << std::endl;
+    this->_pointsStream << "Some generic header information for whatever reason" << std::endl;
+    this->_pointsStream << "ASCII" << std::endl
+                        << std::endl;
+
+    // Write the header for the point coordinates
+    this->_pointsStream << "DATASET STRUCTURED_GRID" << std::endl;
+    this->_pointsStream << "DIMENSIONS " << pointsX << " " << pointsY << " " << pointsZ << std::endl;
+    this->_pointsStream << "POINTS " << pointsX * pointsY * pointsZ << " float" << std::endl;
 
     // Write the points of the grid
     if (parameters.geometry.dim == 2) {
-        for (int j = parameters.parallel.firstCorner[1];
-             j < parameters.parallel.firstCorner[1] + parameters.parallel.localSize[1];
-             ++j) {
-            for (int i = parameters.parallel.firstCorner[0];
-                 i < parameters.parallel.firstCorner[0] + parameters.parallel.localSize[0];
-                 ++i) {
-                _points->InsertNextPoint(parameters.meshsize->getPosX(i, j),
-                                         parameters.meshsize->getPosY(i, j),
-                                         0);
+        for (int j = parameters.parallel.firstCorner[1] + 2; j <= parameters.parallel.firstCorner[1] + pointsY + 1; ++j) {
+            for (int i = parameters.parallel.firstCorner[0] + 2; i <= parameters.parallel.firstCorner[0] + pointsX + 1; ++i) {
+                this->_pointsStream << (parameters.meshsize->getPosX(i, j)) << " "
+                                    << (parameters.meshsize->getPosY(i, j)) << " "
+                                    << 0.0 << std::endl;
             }
         }
-    }
-
-    if (parameters.geometry.dim == 3) {
-        for (int k = parameters.parallel.firstCorner[2];
-             k <= parameters.parallel.firstCorner[2] + parameters.parallel.localSize[2];
-             ++k) {
-            for (int j = parameters.parallel.firstCorner[1];
-                 j <= parameters.parallel.firstCorner[1] + parameters.parallel.localSize[1];
-                 ++j) {
-                for (int i = parameters.parallel.firstCorner[0];
-                     i <= parameters.parallel.firstCorner[0] + parameters.parallel.localSize[0];
-                     ++i) {
-                    _points->InsertNextPoint(parameters.meshsize->getPosX(i, j, k),
-                                             parameters.meshsize->getPosY(i, j, k),
-                                             parameters.meshsize->getPosZ(i, j, k));
+    } else if (parameters.geometry.dim == 3) {
+        for (int k = parameters.parallel.firstCorner[2] + 2; k <= parameters.parallel.firstCorner[2] + pointsZ + 1; ++k) {
+            for (int j = parameters.parallel.firstCorner[1] + 2; j <= parameters.parallel.firstCorner[1] + pointsY + 1; ++j) {
+                for (int i = parameters.parallel.firstCorner[0] + 2; i <= parameters.parallel.firstCorner[0] + pointsX + 1; ++i) {
+                    this->_pointsStream << (parameters.meshsize->getPosX(i, j, k)) << " "
+                                        << (parameters.meshsize->getPosY(i, j, k)) << " "
+                                        << (parameters.meshsize->getPosZ(i, j, k)) << std::endl;
                 }
             }
         }
     }
 
-    // Create the data structures
-    _pressureScalars = vtkSmartPointer<vtkDoubleArray>::New();
-    _pressureScalars->SetNumberOfComponents(1);
-    _velocityVectors = vtkSmartPointer<vtkDoubleArray>::New();
-    _velocityVectors->SetNumberOfComponents(parameters.geometry.dim);
+    this->_pointsStream << std::endl;
+    this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
 
-    _writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
-
-
-    // Link the everything to the grid
-    _polyData->SetPoints(_points);
-    _points->Delete();
-
-    // We can provide our data to the writer, since we will update the data within the structure
-    _writer->SetInputData(_polyData);
+    // Set some parameters for the pressure and velocity streams
+    this->_pressureStream.precision(6);
+    this->_pressureStream << std::fixed;
+    this->_velocityStream.precision(6);
+    this->_velocityStream << std::scientific;
 }
 
 void VTKStencil::apply(FlowField &flowField, int i, int j) {
-    FLOAT pressure;
-    FLOAT velocity[2];
-    flowField.getPressureAndVelocity(pressure, velocity, i, j);
-    _pressureScalars->InsertNextValue(pressure);
-    _velocityVectors->InsertNextTuple(velocity);
+    // Filter out the boundary
+    if (i < 2 || j < 2)
+        return;
+
+    if (flowField.getFlags().getValue(i, j)) {
+        // Get pressure and velocity
+        FLOAT pressure = 0.0;
+        FLOAT velocity[2];
+        flowField.getPressureAndVelocity(pressure, velocity, i, j);
+
+        // Write pressure to pressure data stream
+        this->_pressureStream << pressure << std::endl;
+
+        // Write velocity components to velocity data stream
+        this->_velocityStream << velocity[0] << " " << velocity[1] << " " << 0.0 << std::endl;
+    } else {
+        // Write pressure to pressure data stream
+        this->_pressureStream << 0.0 << std::endl;
+
+        // Write velocity components to velocity data stream
+        this->_velocityStream << 0.0 << " " << 0.0 << " " << 0.0 << std::endl;
+    }
 }
 
 void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
-    FLOAT pressure;
-    FLOAT velocity[3];
-    flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
-    _pressureScalars->InsertNextValue(pressure);
-    _velocityVectors->InsertNextTuple(velocity);
+    // Filter out the boundary
+    if (i < 2 || j < 2 || k < 2)
+        return;
+
+    if (flowField.getFlags().getValue(i, j, k)) {
+        // Get pressure and velocity
+        FLOAT pressure = 0.0;
+        FLOAT velocity[3];
+        flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
+
+        // Write pressure to pressure data stream
+        this->_pressureStream << pressure << std::endl;
+
+        // Write velocity components to velocity data stream
+        this->_velocityStream << velocity[0] << " " << velocity[1] << " " << velocity[2] << std::endl;
+    } else {
+        // Write pressure to pressure data stream
+        this->_pressureStream << 0.0 << std::endl;
+
+        // Write velocity components to velocity data stream
+        this->_velocityStream << 0.0 << " " << 0.0 << " " << 0.0 << std::endl;
+    }
 }
 
 void VTKStencil::write(FlowField &flowField, int timeStep) {
-    _polyData->GetCellData()->SetVectors(_velocityVectors);
-    _polyData->GetPointData()->SetScalars(_pressureScalars);
-    std::string filename = _parameters.vtk.prefix + "_" + std::to_string(timeStep) + ".vts";
-    _writer->SetFileName(filename.c_str());
-    _writer->Write();
+    std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
+                           + "_" + std::to_string(timeStep) + ".vtk";
 
-    // Prepare data structures for next timestep
-    _velocityVectors->Reset();
-    _pressureScalars->Reset();
-}
+    std::ofstream vtkFile;
+    vtkFile.open(filename);
+    if (vtkFile.is_open()) {
+        // Write the header and points to the file
+        vtkFile << this->_pointsStream.str();
 
-VTKStencil::~VTKStencil() {
-    _velocityVectors->Delete();
-    _pressureScalars->Delete();
-    _polyData->Delete();
-    _writer->Delete();
+        // Write the pressure data to the file
+        vtkFile << "SCALARS pressure float 1" << std::endl;
+        vtkFile << "LOOKUP_TABLE default" << std::endl;
+        vtkFile << this->_pressureStream.str();
+
+        // Write the velocity data to the file
+        vtkFile << std::endl;
+        vtkFile << "VECTORS velocity float" << std::endl;
+        vtkFile << this->_velocityStream.str();
+        vtkFile << std::endl << std::endl;
+
+        vtkFile.close();
+    } else std::cerr << "Unable to open vtk output file for timestep " << timeStep << std::endl;
+
+    // Empty the data streams for the next timestep
+    this->_pressureStream.str("");
+    this->_pressureStream << std::fixed;
+    this->_velocityStream.str("");
+    this->_velocityStream << std::scientific;
 }

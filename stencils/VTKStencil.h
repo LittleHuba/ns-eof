@@ -8,25 +8,16 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <vtk/vtkCellArray.h>
-#include <vtk/vtkPoints.h>
-#include <vtk/vtkPointData.h>
-#include <vtk/vtkCellData.h>
-#include <vtk/vtkDoubleArray.h>
-#include <vtk/vtkXMLPolyDataWriter.h>
-#include <vtk/vtkPolyData.h>
-#include <vtk/vtkSmartPointer.h>
 
 /** Stencil for writting VTK files
  *
  * When iterated with, creates a VTK file.
  */
 class VTKStencil : public FieldStencil<FlowField> {
-    vtkSmartPointer<vtkPolyData> _polyData;
-    vtkSmartPointer<vtkPoints> _points;
-    vtkSmartPointer<vtkDoubleArray> _pressureScalars;
-    vtkSmartPointer<vtkDoubleArray> _velocityVectors;
-    vtkSmartPointer<vtkXMLPolyDataWriter> _writer;
+private:
+    std::stringstream _pointsStream;
+    std::stringstream _pressureStream;
+    std::stringstream _velocityStream;
 
     public:
 
@@ -57,8 +48,6 @@ class VTKStencil : public FieldStencil<FlowField> {
          * @param flowField Flow field to be written
          */
         void write ( FlowField & flowField, int timeStep );
-
-    ~VTKStencil() override;
 
 };
 
