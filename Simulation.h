@@ -146,7 +146,7 @@ class Simulation {
 
     }
 
-    /** WS1: plots the flow field. */
+    /** plots the flow field. */
     virtual void plotVTK(int timeStep){
         // iterate stencil over _flowField
         _vtkIterator.iterate();
