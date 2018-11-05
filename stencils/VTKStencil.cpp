@@ -59,9 +59,9 @@ void VTKStencil::apply(FlowField &flowField, int i, int j) {
     if (i < 2 || j < 2)
         return;
 
-    if (flowField.getFlags().getValue(i, j)) {
+    if (flowField.getFlags().getValue(i, j) == 0) {
         // Get pressure and velocity
-        FLOAT pressure = 0.0;
+        FLOAT pressure;
         FLOAT velocity[2];
         flowField.getPressureAndVelocity(pressure, velocity, i, j);
 
@@ -84,9 +84,9 @@ void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
     if (i < 2 || j < 2 || k < 2)
         return;
 
-    if (flowField.getFlags().getValue(i, j, k)) {
+    if (flowField.getFlags().getValue(i, j, k) == 0) {
         // Get pressure and velocity
-        FLOAT pressure = 0.0;
+        FLOAT pressure;
         FLOAT velocity[3];
         flowField.getPressureAndVelocity(pressure, velocity, i, j, k);
 
