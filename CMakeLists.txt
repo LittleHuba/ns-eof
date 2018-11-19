@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
-project(codeframe)
+project(ns)
 
-list(APPEND CMAKE_MODULE_PATH "${codeframe_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${codeframe_SOURCE_DIR}/cmake-modules")
+list(APPEND CMAKE_MODULE_PATH "${ns_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${ns_SOURCE_DIR}/cmake-modules")
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -23,9 +23,9 @@ include_directories(stencils)
 include_directories(${PETSC_INCLUDES})
 
 add_definitions(${PETSC_DEFINITIONS})
-add_definitions(-g)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg")
 
-add_executable(codeframe
+add_executable(ns
         3rdparty/tinyxml2/tinyxml2.cpp
         3rdparty/tinyxml2/tinyxml2.h
         parallelManagers/PetscParallelConfiguration.cpp
@@ -81,14 +81,14 @@ add_executable(codeframe
         Simulation.h
         Stencil.h)
 
-target_link_libraries(codeframe ${PETSC_LIBRARIES} ${VTK_LIBRARIES})
+target_link_libraries(ns ${PETSC_LIBRARIES} ${VTK_LIBRARIES})
 
 if(MPI_COMPILE_FLAGS)
-      set_target_properties(codeframe PROPERTIES
+      set_target_properties(ns PROPERTIES
               COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
 endif()
 
 if(MPI_LINK_FLAGS)
-    set_target_properties(codeframe PROPERTIES
+    set_target_properties(ns PROPERTIES
             LINK_FLAGS "${MPI_LINK_FLAGS}")
 endif()
