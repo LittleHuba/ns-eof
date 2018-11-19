@@ -54,12 +54,8 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     this->_velocityStream << std::scientific;
 }
 
-void VTKStencil::apply(FlowField &flowField, int i, int j) {
-    // Filter out the boundary
-    if (i < 2 || j < 2)
-        return;
-
-    if (flowField.getFlags().getValue(i, j) == 0) {
+inline void VTKStencil::apply(FlowField &flowField, int i, int j) {
+    if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
         // Get pressure and velocity
         FLOAT pressure;
         FLOAT velocity[2];
@@ -79,12 +75,8 @@ void VTKStencil::apply(FlowField &flowField, int i, int j) {
     }
 }
 
-void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
-    // Filter out the boundary
-    if (i < 2 || j < 2 || k < 2)
-        return;
-
-    if (flowField.getFlags().getValue(i, j, k) == 0) {
+inline void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
+    if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
         // Get pressure and velocity
         FLOAT pressure;
         FLOAT velocity[3];
@@ -105,6 +97,7 @@ void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
 }
 
 void VTKStencil::write(FlowField &flowField, int timeStep) {
+    std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 
@@ -117,20 +110,18 @@ void VTKStencil::write(FlowField &flowField, int timeStep) {
         // Write the pressure data to the file
         vtkFile << "SCALARS pressure float 1" << std::endl;
         vtkFile << "LOOKUP_TABLE default" << std::endl;
-        vtkFile << this->_pressureStream.str();
+        vtkFile << this->_pressureStream.rdbuf();
 
         // Write the velocity data to the file
         vtkFile << std::endl;
         vtkFile << "VECTORS velocity float" << std::endl;
-        vtkFile << this->_velocityStream.str();
+        vtkFile << this->_velocityStream.rdbuf();
         vtkFile << std::endl << std::endl;
 
         vtkFile.close();
     } else std::cerr << "Unable to open vtk output file for timestep " << timeStep << std::endl;
 
     // Empty the data streams for the next timestep
-    this->_pressureStream.str("");
     this->_pressureStream << std::fixed;
-    this->_velocityStream.str("");
     this->_velocityStream << std::scientific;
 }

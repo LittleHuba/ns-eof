@@ -79,7 +79,7 @@ class Simulation {
        _velocityIterator(_flowField,parameters,_velocityStencil),
        _obstacleIterator(_flowField,parameters,_obstacleStencil),
        _vtkStencil(parameters),
-       _vtkIterator(_flowField,parameters,_vtkStencil),
+       _vtkIterator(_flowField,parameters,_vtkStencil, 1),
        _solver(_flowField,parameters)
        {
        }

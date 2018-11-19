@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         timeSteps++;
 
         // trigger VTK output
-        if (timeVTKOut >= time) {
+        if (timeVTKOut <= time) {
             simulation->plotVTK(timeSteps);
             timeVTKOut += parameters.vtk.interval;
         }

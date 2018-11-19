@@ -32,7 +32,9 @@ stencils/BFStepInitStencil.o stencils/NeumannBoundaryStencils.o stencils/BFInput
 
 all: ns
 
-ns: $(OBJ) $(NSOBJ) $(NSMAIN)
+ns: 
+	@printf "\033[0;31mUsing make is deprecated!!! Use cmake instead (Read the README for instructions)\033[0m\r\n"
+	$(OBJ) $(NSOBJ) $(NSMAIN)
 	$(CC) -o ns $(OBJ) $(NSOBJ) $(NSMAIN) $(PETSC_KSP_LIB) -lstdc++ $(CFLAGS)
 
 
