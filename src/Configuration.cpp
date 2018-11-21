@@ -418,8 +418,17 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
 
 
         //------------------------------------------------------
-        // TODO WS2: Turbulence
+        // Turbulence
         //------------------------------------------------------
+        parameters.turbulence.kappa = 0.41;
+        node = confFile.FirstChildElement()->FirstChildElement("turbulence");
+        if (node != NULL){
+            readFloatMandatory(parameters.turbulence.delta, node, "delta");
+            readFloatOptional(parameters.turbulence.kappa, node, "kappa");
+            parameters.turbulence.isTurbulenceEnabled = true;
+        } else {
+            parameters.turbulence.isTurbulenceEnabled = false;
+        }
     }
 
     // Broadcasting of the values
@@ -477,7 +486,8 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
     MPI_Bcast(parameters.walls.vectorFront,  3, MY_MPI_FLOAT, 0, communicator);
     MPI_Bcast(parameters.walls.vectorBack,   3, MY_MPI_FLOAT, 0, communicator);
 
-    // TODO WS2: broadcast turbulence parameters
-
-
+    // Broadcast turbulence parameters
+    MPI_Bcast(&(parameters.turbulence.isTurbulenceEnabled), 1, MPI_CXX_BOOL, 0, communicator);
+    MPI_Bcast(&(parameters.turbulence.kappa), 1, MY_MPI_FLOAT, 0, communicator);
+    MPI_Bcast(&(parameters.turbulence.delta), 1, MY_MPI_FLOAT, 0, communicator);
 }

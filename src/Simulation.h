@@ -84,7 +84,7 @@ class Simulation {
        {
        }
 
-    virtual ~Simulation(){}
+    virtual ~Simulation() = default;
 
     /** initialises the flow field according to the scenario */
     virtual void initializeFlowField(){
