@@ -1,15 +1,12 @@
-//
-// Created by ulrich on 19.11.18.
-//
+#define BOOST_TEST_MODULE NSEOFTests
+#include <boost/test/unit_test.hpp>
 
-#include <cxxtest/TestSuite.h>
-
-class DummyTestSuite : public CxxTest::TestSuite
+BOOST_AUTO_TEST_CASE(FailTest)
 {
-public:
-    void testAddition(void)
-    {
-        TS_ASSERT(1 + 1 > 1);
-        TS_ASSERT_EQUALS(1 + 1, 2);
-    }
-};
+    BOOST_CHECK_EQUAL(5, 2);
+}
+
+BOOST_AUTO_TEST_CASE(PassTest)
+{
+    BOOST_CHECK_EQUAL(4, 4);
+}
