@@ -16,11 +16,7 @@ typedef enum Direction
 
 namespace DirectionUtils
 {
-    unsigned char getOppositeDirection(Direction direction)
-    {
-        unsigned char u = direction & 1;
-        return ((direction>>1)<<1) + !u;
-    }
+    int getOppositeDirection(int direction);
 }
 
 #endif //NS_DIRECTION_H

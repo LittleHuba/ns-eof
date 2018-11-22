@@ -8,7 +8,17 @@ include_directories(stencils)
 include_directories(${PETSC_INCLUDES})
 
 add_definitions(${PETSC_DEFINITIONS})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pg")
+
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
+    message(">>> Debug mode")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -ggdb -pg")
+ELSEIF(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+    message(">>> RelWithDebInfo mode")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pg")
+ELSE(CMAKE_BUILD_TYPE MATCHES Debug)
+    message(">>> Release mode")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 add_library(ns-eof
         3rdparty/tinyxml2/tinyxml2.cpp
@@ -62,7 +72,17 @@ add_library(ns-eof
         SimpleTimer.cpp
         SimpleTimer.h
         Simulation.h
-        Stencil.h stencils/communicationStencils/PressureBufferFillStencil.cpp stencils/communicationStencils/PressureBufferFillStencil.h stencils/communicationStencils/PressureBufferReadStencil.cpp stencils/communicationStencils/PressureBufferReadStencil.h)
+        Stencil.h
+        stencils/communicationStencils/PressureBufferFillStencil.cpp
+        stencils/communicationStencils/PressureBufferFillStencil.h
+        stencils/communicationStencils/PressureBufferReadStencil.cpp
+        stencils/communicationStencils/PressureBufferReadStencil.h
+        parallelManagers/PetscParallelManager.cpp
+        parallelManagers/PetscParallelManager.h
+        stencils/communicationStencils/CommunicationStencil.cpp
+        stencils/communicationStencils/CommunicationStencil.h
+        stencils/communicationStencils/Direction.h
+        stencils/communicationStencils/Direction.cpp)
 target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
 add_executable(ns main.cpp)

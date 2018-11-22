@@ -7,14 +7,12 @@
 
 #include <FlowField.h>
 #include <Stencil.h>
+#include "CommunicationStencil.h"
 
-class PressureBufferReadStencil : public BoundaryStencil<FlowField>
+class PressureBufferReadStencil : public CommunicationStencil<FLOAT>
 {
-private:
-    FLOAT **buffers;
 public:
-    PressureBufferReadStencil(const Parameters &parameters, FLOAT **buffers) : BoundaryStencil(parameters),
-                                                                               buffers(buffers)
+    explicit PressureBufferReadStencil(const Parameters &parameters) : CommunicationStencil(parameters)
     {}
     
     void applyLeftWall(FlowField &flowField, int i, int j) override;

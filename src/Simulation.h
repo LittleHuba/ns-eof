@@ -4,6 +4,7 @@
 #include <petscksp.h>
 #include <float.h>
 #include <mpi.h>
+#include <parallelManagers/PetscParallelManager.h>
 #include "FlowField.h"
 #include "stencils/FGHStencil.h"
 #include "stencils/MovingWallStencils.h"
@@ -56,6 +57,9 @@ class Simulation {
     // Create VTKStencil and respective iterator
     VTKStencil _vtkStencil;
     FieldIterator<FlowField> _vtkIterator;
+    
+    // Parallel manager
+    PetscParallelManager _parallelManager;
 
     PetscSolver _solver;
 
@@ -80,6 +84,7 @@ class Simulation {
        _obstacleIterator(_flowField,parameters,_obstacleStencil),
        _vtkStencil(parameters),
        _vtkIterator(_flowField,parameters,_vtkStencil, 1),
+       _parallelManager(parameters,_flowField),
        _solver(_flowField,parameters)
        {
        }
@@ -135,12 +140,18 @@ class Simulation {
         _rhsIterator.iterate();
         // solve for pressure 
         _solver.solve();
+        
         // TODO WS2: communicate pressure values
+        _parallelManager.exchangePressure();
+        
         // compute velocity
         _velocityIterator.iterate();
 	    // set obstacle boundaries
 	    _obstacleIterator.iterate();
-        // TODO WS2: communicate velocity values
+        
+	    // TODO WS2: communicate velocity values
+        // _parallelManager.exchangeVelocity(); // todo: uncomment when implemented
+        
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
 

@@ -13,31 +13,62 @@
 #include <stencils/communicationStencils/Direction.h>
 #include <Iterators.h>
 
-class PetsParallelManager
+typedef enum Tag {PRESSURE_COMM=0, VELOCITY_COMM=1} Tag;
+
+class PetscParallelManager
 {
 private:
     const Parameters &parameters;
     FlowField &flowField;
     int Nx, Ny, Nz;
-    int sizes[6]; // Size of each boundary face of the cube
+    int sizes[NUMBER_OF_DIRECTIONS]; // Size of each boundary face of the cube
+    int rank;
+    int neighbours[NUMBER_OF_DIRECTIONS]; // Ranks of neighbours
     
-    FLOAT **sendBuffers;
-    FLOAT **recvBuffers;
+    FLOAT **pressureSendBuffers;
+    FLOAT **pressureRecvBuffers;
     
-    ParallelBoundaryIterator<FlowField> pressureBoundaryIterator;
+    ParallelBoundaryIterator<FlowField> pressureSendIterator;
+    ParallelBoundaryIterator<FlowField> pressureRecvIterator;
     
     PressureBufferFillStencil pressureSendStencil;
     PressureBufferReadStencil pressureRecvStencil;
-    
+
 public:
-    PetsParallelManager(const Parameters &parameters, FlowField &flowField);
+    PetscParallelManager(const Parameters &parameters, FlowField &flowField);
     
-    virtual ~PetsParallelManager();
+    void exchangePressure();
+    
+    void exchangeVelocity() = delete; // TODO: Implement this
+    
+    virtual ~PetscParallelManager();
 
 private:
+    void initializeSizes(const Parameters &parameters, const FlowField &flowField);
+    
+    void initializeNeighbours(const Parameters &parameters);
+    
     void allocateBuffers();
     
-    void initializeSizes(const Parameters &parameters, const FlowField &flowField);
+    /**
+     * Read values from the grid into the appropriate buffer using the given iterator.
+     * @param iterator
+     */
+    void readValues(ParallelBoundaryIterator<FlowField> iterator);
+    
+    /**
+     * Write values into the grid from the given buffer using the given iterator.
+     * @param iterator
+     */
+    void writeValues(ParallelBoundaryIterator<FlowField> iterator);
+    
+    /**
+     * Communicate with the neighbours using the given buffers.
+     * @tparam BufferValue
+     * @param recvBuffer
+     */
+    template<class BufferValue>
+    void communicateValues(BufferValue **sendBuffer, BufferValue **recvBuffer);
 };
 
 

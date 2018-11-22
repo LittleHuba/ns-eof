@@ -4,7 +4,4 @@
 
 #include "CommunicationStencil.h"
 
-void CommunicationStencil::initializeBuffers(FLOAT **buffers)
-{
-    this->buffers = buffers;
-}
+
