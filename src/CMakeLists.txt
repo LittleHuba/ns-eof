@@ -62,7 +62,7 @@ add_library(ns-eof
         SimpleTimer.cpp
         SimpleTimer.h
         Simulation.h
-        Stencil.h)
+        Stencil.h stencils/communicationStencils/PressureBufferFillStencil.cpp stencils/communicationStencils/PressureBufferFillStencil.h stencils/communicationStencils/PressureBufferReadStencil.cpp stencils/communicationStencils/PressureBufferReadStencil.h)
 target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
 add_executable(ns main.cpp)
