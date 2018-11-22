@@ -47,7 +47,7 @@ private:
         /** Writes the information to the file
          * @param flowField Flow field to be written
          */
-        void write ( FlowField & flowField, int timeStep );
+        void write (int timeStep );
 
 };
 

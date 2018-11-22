@@ -151,7 +151,7 @@ class Simulation {
         // iterate stencil over _flowField
         _vtkIterator.iterate();
         // write flow field information to vtk file
-        _vtkStencil.write(_flowField, timeStep);
+        _vtkStencil.write(timeStep);
     }
 
   protected:
