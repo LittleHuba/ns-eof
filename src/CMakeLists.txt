@@ -1,8 +1,5 @@
 find_package(PETSc COMPONENTS CXX)
 
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
-
 include_directories(.)
 include_directories(3rdparty/tinyxml2)
 include_directories(parallelManagers)
@@ -66,10 +63,10 @@ add_library(ns-eof
         SimpleTimer.h
         Simulation.h
         Stencil.h)
+target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
 add_executable(ns main.cpp)
-
-target_link_libraries(ns ${PETSC_LIBRARIES} ${VTK_LIBRARIES} ns-eof)
+target_link_libraries(ns ns-eof)
 
 if(MPI_COMPILE_FLAGS)
     set_target_properties(ns PROPERTIES
