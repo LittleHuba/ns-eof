@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE "NS-EOF Unit Tests"
+#include <boost/test/included/unit_test.hpp>
 
 //BOOST_AUTO_TEST_CASE(FailTest)
 //{
