@@ -32,15 +32,15 @@ private:
     Triple<FLOAT> **velocitySendBuffers;
     Triple<FLOAT> **velocityRecvBuffers;
     
-    ParallelBoundaryIterator<FlowField> pressureSendIterator;
-    ParallelBoundaryIterator<FlowField> pressureRecvIterator;
-    ParallelBoundaryIterator<FlowField> velocitySendIterator;
-    ParallelBoundaryIterator<FlowField> velocityRecvIterator;
-    
     PressureBufferFillStencil pressureSendStencil;
     PressureBufferReadStencil pressureRecvStencil;
     VelocityBufferFillStencil velocitySendStencil;
     VelocityBufferReadStencil velocityRecvStencil;
+
+    ParallelBoundaryIterator<FlowField> pressureSendIterator;
+    ParallelBoundaryIterator<FlowField> pressureRecvIterator;
+    ParallelBoundaryIterator<FlowField> velocitySendIterator;
+    ParallelBoundaryIterator<FlowField> velocityRecvIterator;
 
 public:
     PetscParallelManager(const Parameters &parameters, FlowField &flowField);
