@@ -251,4 +251,40 @@ class IntScalarField : public Field<int> {
         void show (const std::string title = "");
 };
 
+// 3-tuple type to store coordinates and other 3D data
+template <class DataType>
+struct Triple
+{
+    DataType x;
+    DataType y;
+    DataType z;
+    
+    Triple() : x(0), y(0), z(0)
+    {}
+    
+    Triple(DataType x, DataType y, DataType z) : x(x), y(y), z(z)
+    {}
+    
+    Triple(const DataType v[3])
+    {
+        x = v[0];
+        y = v[1];
+        z = v[2];
+    }
+    
+    Triple(const Triple<DataType> &other)
+    {
+        x = other.x;
+        y = other.y;
+        z = other.z;
+    }
+    
+    Triple<DataType>& operator=(const Triple<DataType>& other)
+    {
+        x = other.x;
+        y = other.y;
+        z = other.z;
+    }
+};
+
 #endif

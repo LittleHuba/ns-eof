@@ -148,9 +148,9 @@ class Simulation {
         _velocityIterator.iterate();
 	    // set obstacle boundaries
 	    _obstacleIterator.iterate();
-        
+     
 	    // TODO WS2: communicate velocity values
-        // _parallelManager.exchangeVelocity(); // todo: uncomment when implemented
+	    _parallelManager.exchangeVelocity();
         
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();

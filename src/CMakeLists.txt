@@ -82,7 +82,7 @@ add_library(ns-eof
         stencils/communicationStencils/CommunicationStencil.cpp
         stencils/communicationStencils/CommunicationStencil.h
         stencils/communicationStencils/Direction.h
-        stencils/communicationStencils/Direction.cpp)
+        stencils/communicationStencils/Direction.cpp stencils/communicationStencils/VelocityBufferFillStencil.cpp stencils/communicationStencils/VelocityBufferFillStencil.h stencils/communicationStencils/VelocityBufferReadStencil.cpp stencils/communicationStencils/VelocityBufferReadStencil.h)
 target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
 add_executable(ns main.cpp)

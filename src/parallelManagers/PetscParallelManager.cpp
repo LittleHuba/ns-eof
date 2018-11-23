@@ -7,8 +7,11 @@
 PetscParallelManager::PetscParallelManager(const Parameters &parameters, FlowField &flowField)
         : parameters(parameters), flowField(flowField),
         pressureSendStencil(parameters), pressureRecvStencil(parameters),
-        pressureSendIterator(flowField, parameters, pressureSendStencil), //todo: here check if these iterators need any offset
-        pressureRecvIterator(flowField, parameters, pressureRecvStencil)
+        velocitySendStencil(parameters), velocityRecvStencil(parameters),
+        pressureSendIterator(flowField, parameters, pressureSendStencil, 1, 0), //todo: here check if these iterators need any offset
+        pressureRecvIterator(flowField, parameters, pressureRecvStencil, 1, 0),
+        velocitySendIterator(flowField, parameters, velocitySendStencil, 1, 0),
+        velocityRecvIterator(flowField, parameters, velocityRecvStencil, 1, 0)
 {
     initializeSizes(parameters, flowField);
     rank = parameters.parallel.rank;
@@ -16,6 +19,8 @@ PetscParallelManager::PetscParallelManager(const Parameters &parameters, FlowFie
     allocateBuffers();
     pressureSendStencil.initializeBuffers(pressureSendBuffers);
     pressureRecvStencil.initializeBuffers(pressureRecvBuffers);
+    velocitySendStencil.initializeBuffers(velocitySendBuffers);
+    velocityRecvStencil.initializeBuffers(velocityRecvBuffers);
 }
 
 void PetscParallelManager::initializeNeighbours(const Parameters &parameters)
@@ -59,16 +64,22 @@ void PetscParallelManager::allocateBuffers()
 {
     pressureSendBuffers = new FLOAT *[NUMBER_OF_DIRECTIONS];
     pressureRecvBuffers = new FLOAT *[NUMBER_OF_DIRECTIONS];
+    velocitySendBuffers = new Triple<FLOAT> *[NUMBER_OF_DIRECTIONS];
+    velocityRecvBuffers = new Triple<FLOAT> *[NUMBER_OF_DIRECTIONS];
     
     int totalSize = sizes[LEFT] + sizes[RIGHT] + sizes[BOTTOM] + sizes[TOP] + sizes[FRONT] + sizes[BACK];
     pressureSendBuffers[0] = new FLOAT[totalSize];
     pressureRecvBuffers[0] = new FLOAT[totalSize];
+    velocitySendBuffers[0] = new Triple<FLOAT>[totalSize];
+    velocityRecvBuffers[0] = new Triple<FLOAT>[totalSize];
     int offset = 0;
     for (int d = 1; d < NUMBER_OF_DIRECTIONS; ++d)
     {
         offset += sizes[d];
         pressureSendBuffers[d] = pressureSendBuffers[0] + offset;
         pressureRecvBuffers[d] = pressureRecvBuffers[0] + offset;
+        velocitySendBuffers[d] = velocitySendBuffers[0] + offset;
+        velocityRecvBuffers[d] = velocityRecvBuffers[0] + offset;
     }
 }
 
@@ -77,6 +88,13 @@ void PetscParallelManager::exchangePressure()
     readValues(pressureSendIterator);
     communicateValues(pressureSendBuffers, pressureRecvBuffers);
     writeValues(pressureRecvIterator);
+}
+
+void PetscParallelManager::exchangeVelocity()
+{
+    readValues(velocitySendIterator);
+    communicateValues(velocitySendBuffers, velocityRecvBuffers);
+    writeValues(velocityRecvIterator);
 }
 
 void PetscParallelManager::readValues(ParallelBoundaryIterator<FlowField> iterator)

@@ -12,6 +12,8 @@
 #include <stencils/communicationStencils/PressureBufferReadStencil.h>
 #include <stencils/communicationStencils/Direction.h>
 #include <Iterators.h>
+#include <stencils/communicationStencils/VelocityBufferFillStencil.h>
+#include <stencils/communicationStencils/VelocityBufferReadStencil.h>
 
 typedef enum Tag {PRESSURE_COMM=0, VELOCITY_COMM=1} Tag;
 
@@ -27,19 +29,25 @@ private:
     
     FLOAT **pressureSendBuffers;
     FLOAT **pressureRecvBuffers;
+    Triple<FLOAT> **velocitySendBuffers;
+    Triple<FLOAT> **velocityRecvBuffers;
     
     ParallelBoundaryIterator<FlowField> pressureSendIterator;
     ParallelBoundaryIterator<FlowField> pressureRecvIterator;
+    ParallelBoundaryIterator<FlowField> velocitySendIterator;
+    ParallelBoundaryIterator<FlowField> velocityRecvIterator;
     
     PressureBufferFillStencil pressureSendStencil;
     PressureBufferReadStencil pressureRecvStencil;
+    VelocityBufferFillStencil velocitySendStencil;
+    VelocityBufferReadStencil velocityRecvStencil;
 
 public:
     PetscParallelManager(const Parameters &parameters, FlowField &flowField);
     
     void exchangePressure();
     
-    void exchangeVelocity() = delete; // TODO: Implement this
+    void exchangeVelocity();
     
     virtual ~PetscParallelManager();
 
