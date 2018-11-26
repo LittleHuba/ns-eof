@@ -15,7 +15,7 @@
 #include <stencils/communicationStencils/VelocityBufferFillStencil.h>
 #include <stencils/communicationStencils/VelocityBufferReadStencil.h>
 
-typedef enum Tag {PRESSURE_COMM=0, VELOCITY_COMM=1} Tag;
+typedef enum Tag {PRESSURE_TAG=0, VELOCITY_TAG=1, GENERIC_TAG=666} Tag;
 
 class PetscParallelManager
 {
@@ -76,7 +76,7 @@ private:
      * @param recvBuffer
      */
     template<class BufferValue>
-    void communicateValues(BufferValue **sendBuffer, BufferValue **recvBuffer);
+    void communicateValues(BufferValue **sendBuffer, BufferValue **recvBuffer, std::string commTypeStr);
 };
 
 
