@@ -39,6 +39,8 @@ add_library(ns-eof
         stencils/RHSStencil.cpp
         stencils/RHSStencil.h
         stencils/StencilFunctions.h
+        stencils/TurbulenceFGHStencil.cpp
+        stencils/TurbulenceFGHStencil.h
         stencils/TurbulenceVTKStencil.cpp
         stencils/TurbulenceVTKStencil.h
         stencils/VelocityStencil.cpp

@@ -688,4 +688,45 @@ inline FLOAT computeH3D(const FLOAT * const localVelocity, const FLOAT * const l
                 - dvwdy ( localVelocity, parameters, localMeshsize ) + parameters.environment.gz );
 }
 
+inline FLOAT computeTurbulentF2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,0)]
+           + dt * ( 1 / parameters.flow.Re * ( d2udx2 ( localVelocity, localMeshsize )
+                                               + d2udy2(localVelocity, localMeshsize)) - du2dx (localVelocity, parameters, localMeshsize)
+                    - duvdy (localVelocity, parameters, localMeshsize) + parameters.environment.gx);
+}
+
+inline FLOAT computeTurbulentG2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,1)]
+           + dt * ( 1 / parameters.flow.Re * ( d2vdx2 ( localVelocity, localMeshsize )
+                                               + d2vdy2(localVelocity, localMeshsize)) - duvdx (localVelocity, parameters, localMeshsize)
+                    - dv2dy (localVelocity, parameters, localMeshsize) + parameters.environment.gy);
+}
+
+
+inline FLOAT computeTurbulentF3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,0)]
+           +  dt * ( 1 / parameters.flow.Re * ( d2udx2 ( localVelocity, localMeshsize )
+                                                + d2udy2 ( localVelocity, localMeshsize ) + d2udz2 ( localVelocity, localMeshsize ) )
+                     - du2dx ( localVelocity, parameters, localMeshsize ) - duvdy ( localVelocity, parameters, localMeshsize )
+                     - duwdz ( localVelocity, parameters, localMeshsize ) + parameters.environment.gx );
+}
+
+
+inline FLOAT computeTurbulentG3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,1)]
+           +  dt * ( 1 / parameters.flow.Re * ( d2vdx2 ( localVelocity, localMeshsize )
+                                                + d2vdy2 ( localVelocity, localMeshsize ) + d2vdz2 ( localVelocity, localMeshsize ) )
+                     - dv2dy ( localVelocity, parameters, localMeshsize ) - duvdx ( localVelocity, parameters, localMeshsize )
+                     - dvwdz ( localVelocity, parameters, localMeshsize ) + parameters.environment.gy );
+}
+
+
+inline FLOAT computeTurbulentH3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,2)]
+           +  dt * ( 1 / parameters.flow.Re * ( d2wdx2 ( localVelocity, localMeshsize )
+                                                + d2wdy2 ( localVelocity, localMeshsize ) + d2wdz2 ( localVelocity, localMeshsize ) )
+                     - dw2dz ( localVelocity, parameters, localMeshsize ) - duwdx ( localVelocity, parameters, localMeshsize )
+                     - dvwdy ( localVelocity, parameters, localMeshsize ) + parameters.environment.gz );
+}
+
 #endif
