@@ -155,7 +155,7 @@ void PetscParallelManager::communicateValues(BufferValue **sendBuffer, BufferVal
         {
             if (!(rBuf[0] == rNbRank))
             {
-                std::cout << "ERROR:NOT_EQUAL: rBuf[0]=" << rBuf[0] << " rNbRank=" << rNbRank << std::endl;
+                std::cout << "[" << commTypeStr << "] ERROR:NOT_EQUAL: rBuf[0]=" << rBuf[0] << " rNbRank=" << rNbRank << std::endl;
             }
             assert(rBuf[0] == rNbRank);
         }

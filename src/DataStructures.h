@@ -274,7 +274,7 @@ struct Triple
     Triple(DataType x, DataType y, DataType z) : x(x), y(y), z(z)
     {}
     
-    Triple(const DataType v[3])
+    explicit Triple(const DataType v[3])
     {
         x = v[0];
         y = v[1];
@@ -295,6 +295,13 @@ struct Triple
         z = other.z;
     }
     
+    Triple<DataType> &operator=(const DataType other[3])
+    {
+        x = other[0];
+        y = other[1];
+        z = other[2];
+    }
+    
     Triple<DataType> &operator=(const DataType other) // To allow --> triple = 0
     {
         x = other;
@@ -311,7 +318,9 @@ struct Triple
     
     bool operator==(const DataType other) // To allow --> triple == 0
     {
-        return x == other;
+        return (x == other)
+               && (y == other)
+               && (z == other);
     }
     
     template <class DT>
