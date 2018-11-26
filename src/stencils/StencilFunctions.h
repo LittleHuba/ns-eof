@@ -6,61 +6,6 @@
 #include "../Parameters.h"
 #include "../FlowField.h"
 
-
-//signum function
-int signum(int i)
-{
-    if(i>0)
-        return 1;
-    if(i<0)
-        return -1;
-    if(i=0)
-        return 0;
-}
-
-//interpolate Viscosity
-inline FLOAT vt_interpolate( const FLOAT * const localViscosity, const FLOAT * const lm, const unsigned int i=2, const unsigned int j=2, const unsigned int k=2){
-    //i=0 for i-1/2, i=1 for i+1/2
-    //j=0 for j-1/2, j=1 for j+1/2
-    //k=0 for k-1/2, k=1 for k+1/2
-    //i,j,k=2 --> no interpolation in this direction, always one of all three indices must be 2
-
-    FLOAT buffer[4];
-
-    if(k==2)
-    {
-        k=0;
-        buffer[0]=localViscosity[mapd(i-1,j,k,0)]+(localViscosity[mapd(i,j,k,0)]-localViscosity[mapd(i-1,j,k,0)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
-        buffer[1]=localViscosity[mapd(i-1,j-1,k,0)]+(localViscosity[mapd(i,j-1,k,0)]-localViscosity[mapd(i-1,j-1,k,0)])/(lm[mapd(i,j-1,k,0)]+lm[mapd(i-1,j-1,k,0)])*lm[mapd(i-1,j-1,k,0)];
-        buffer[2]=lm[mapd(i-1,j,k,1)]+(lm[mapd(i,j,k,1)]-lm[mapd(i-1,j,k,1)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
-        buffer[3]=lm[mapd(i-1,j-1,k,1)]+(lm[mapd(i,j-1,k,1)]-lm[mapd(i-1,j-1,k,1)])/(lm[mapd(i,j-1,k,0)]+lm[mapd(i-1,j-1,k,0)])*lm[mapd(i-1,j-1,k,0)];
-        return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
-    }
-
-    if(j==2)
-    {
-        j=0;
-        buffer[0]=localViscosity[mapd(i-1,j,k,0)]+(localViscosity[mapd(i,j,k,0)]-localViscosity[mapd(i-1,j,k,0)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
-        buffer[1]=localViscosity[mapd(i-1,j,k-1,0)]+(localViscosity[mapd(i,j,k-1,0)]-localViscosity[mapd(i-1,j,k-1,0)])/(lm[mapd(i,j,k-1,0)]+lm[mapd(i-1,j,k-1,0)])*lm[mapd(i-1,j,k-1,0)];
-        buffer[2]=lm[mapd(i-1,j,k,2)]+(lm[mapd(i,j,k,2)]-lm[mapd(i-1,j,k,2)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
-        buffer[3]=lm[mapd(i-1,j,k-1,2)]+(lm[mapd(i,j,k-1,2)]-lm[mapd(i-1,j,k-1,2)])/(lm[mapd(i,j,k-1,0)]+lm[mapd(i-1,j,k-1,0)])*lm[mapd(i-1,j,k-1,0)];
-        return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
-    }
-
-    if(i==2)
-    {
-        i=0;
-        buffer[0]=localViscosity[mapd(i,j,k-1,0)]+(localViscosity[mapd(i,j,k,0)]-localViscosity[mapd(i,j,k-1,0)])/(lm[mapd(i,j,k,2)]+lm[mapd(i,j,k-1,2)])*lm[mapd(i,j,k-1,2)];
-        buffer[1]=localViscosity[mapd(i,j-1,k-1,0)]+(localViscosity[mapd(i,j-1,k,0)]-localViscosity[mapd(i,j-1,k-1,0)])/(lm[mapd(i,j-1,k,2)]+lm[mapd(i,j-1,k-1,2)])*lm[mapd(i,j-1,k-1,2)];
-        buffer[2]=lm[mapd(i,j,k-1,1)]+(lm[mapd(i,j,k,1)]-lm[mapd(i,j,k-1,1)])/(lm[mapd(i,j,k,2)]+lm[mapd(i,j,k-1,2)])*lm[mapd(i,j,k-1,2)];
-        buffer[3]=lm[mapd(i,j-1,k-1,1)]+(lm[mapd(i,j-1,k,1)]-lm[mapd(i,j-1,k-1,1)])/(lm[mapd(i,j-1,k,2)]+lm[mapd(i,j-1,k-1,2)])*lm[mapd(i,j-1,k-1,2)];
-        return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
-    }
-
-
-}
-
-
 // Load the local velocity cube with relevant velocities of the 2D plane
 inline void loadLocalVelocity2D(FlowField & flowField, FLOAT * const localVelocity, int i, int j){
     for (int row = -1; row <= 1; row++ ){
@@ -952,6 +897,48 @@ inline FLOAT computeH3D(const FLOAT * const localVelocity, const FLOAT * const l
                 + d2wdy2 ( localVelocity, localMeshsize ) + d2wdz2 ( localVelocity, localMeshsize ) )
                 - dw2dz ( localVelocity, parameters, localMeshsize ) - duwdx ( localVelocity, parameters, localMeshsize )
                 - dvwdy ( localVelocity, parameters, localMeshsize ) + parameters.environment.gz );
+}
+
+//interpolate Viscosity
+inline FLOAT vt_interpolate( const FLOAT * const localViscosity, const FLOAT * const lm, unsigned int i=2, unsigned int j=2, unsigned int k=2){
+    //i=0 for i-1/2, i=1 for i+1/2
+    //j=0 for j-1/2, j=1 for j+1/2
+    //k=0 for k-1/2, k=1 for k+1/2
+    //i,j,k=2 --> no interpolation in this direction, always one of all three indices must be 2
+
+    FLOAT buffer[4];
+
+    if(k==2)
+    {
+        k=0;
+        buffer[0]=localViscosity[mapd(i-1,j,k,0)]+(localViscosity[mapd(i,j,k,0)]-localViscosity[mapd(i-1,j,k,0)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
+        buffer[1]=localViscosity[mapd(i-1,j-1,k,0)]+(localViscosity[mapd(i,j-1,k,0)]-localViscosity[mapd(i-1,j-1,k,0)])/(lm[mapd(i,j-1,k,0)]+lm[mapd(i-1,j-1,k,0)])*lm[mapd(i-1,j-1,k,0)];
+        buffer[2]=lm[mapd(i-1,j,k,1)]+(lm[mapd(i,j,k,1)]-lm[mapd(i-1,j,k,1)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
+        buffer[3]=lm[mapd(i-1,j-1,k,1)]+(lm[mapd(i,j-1,k,1)]-lm[mapd(i-1,j-1,k,1)])/(lm[mapd(i,j-1,k,0)]+lm[mapd(i-1,j-1,k,0)])*lm[mapd(i-1,j-1,k,0)];
+        return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
+    }
+
+    if(j==2)
+    {
+        j=0;
+        buffer[0]=localViscosity[mapd(i-1,j,k,0)]+(localViscosity[mapd(i,j,k,0)]-localViscosity[mapd(i-1,j,k,0)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
+        buffer[1]=localViscosity[mapd(i-1,j,k-1,0)]+(localViscosity[mapd(i,j,k-1,0)]-localViscosity[mapd(i-1,j,k-1,0)])/(lm[mapd(i,j,k-1,0)]+lm[mapd(i-1,j,k-1,0)])*lm[mapd(i-1,j,k-1,0)];
+        buffer[2]=lm[mapd(i-1,j,k,2)]+(lm[mapd(i,j,k,2)]-lm[mapd(i-1,j,k,2)])/(lm[mapd(i,j,k,0)]+lm[mapd(i-1,j,k,0)])*lm[mapd(i-1,j,k,0)];
+        buffer[3]=lm[mapd(i-1,j,k-1,2)]+(lm[mapd(i,j,k-1,2)]-lm[mapd(i-1,j,k-1,2)])/(lm[mapd(i,j,k-1,0)]+lm[mapd(i-1,j,k-1,0)])*lm[mapd(i-1,j,k-1,0)];
+        return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
+    }
+
+    if(i==2)
+    {
+        i=0;
+        buffer[0]=localViscosity[mapd(i,j,k-1,0)]+(localViscosity[mapd(i,j,k,0)]-localViscosity[mapd(i,j,k-1,0)])/(lm[mapd(i,j,k,2)]+lm[mapd(i,j,k-1,2)])*lm[mapd(i,j,k-1,2)];
+        buffer[1]=localViscosity[mapd(i,j-1,k-1,0)]+(localViscosity[mapd(i,j-1,k,0)]-localViscosity[mapd(i,j-1,k-1,0)])/(lm[mapd(i,j-1,k,2)]+lm[mapd(i,j-1,k-1,2)])*lm[mapd(i,j-1,k-1,2)];
+        buffer[2]=lm[mapd(i,j,k-1,1)]+(lm[mapd(i,j,k,1)]-lm[mapd(i,j,k-1,1)])/(lm[mapd(i,j,k,2)]+lm[mapd(i,j,k-1,2)])*lm[mapd(i,j,k-1,2)];
+        buffer[3]=lm[mapd(i,j-1,k-1,1)]+(lm[mapd(i,j-1,k,1)]-lm[mapd(i,j-1,k-1,1)])/(lm[mapd(i,j-1,k,2)]+lm[mapd(i,j-1,k-1,2)])*lm[mapd(i,j-1,k-1,2)];
+        return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
+    }
+
+
 }
 
 inline FLOAT computeTurbulentF2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const FLOAT * localViscosity, const Parameters & parameters, FLOAT dt){
