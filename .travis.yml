@@ -10,18 +10,10 @@ compiler:
 os:
 - linux
 before_install:
+- test -n $CC  && unset CC
+- test -n $CXX && unset CXX
 - ./scripts/dependencies.sh
 script:
 - ./scripts/build.sh
-notifications:
-  webhooks:
-    urls:
-      secure: h2oTAbAZF6+c6iv/kHoDGtl1mzQDF2vQSKWnO1pwfEz+L80lX9u3+JB+jsbYUcZ9smBRnRRghqxpLBmyzH3QZCrBdxKnTWfGc7I7lkTCFQZ5O3pPmIusO6W5zX+YUc+NHPPZXouHuHFmEeEB9vJnt/YB/fyGAGOIq+qXV4s+R9M=
-    on_success: always
-    on_failure: always
-    on_start: always
 env:
   global:
-  - OPENSSL_DIR=$(brew --prefix openssl)
-  - RBXOPT=-Xcodedb.cache.enabled=no
-  - LANG="en_US.UTF-8"
