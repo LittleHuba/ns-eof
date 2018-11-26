@@ -1,0 +1,22 @@
+language: cpp
+sudo: required
+dist: trusty
+cache: bundler
+addons:
+  apt:
+    packages:
+    - cmake
+    sources:
+    - ubuntu-toolchain-r-test
+compiler:
+- mpicxx
+os:
+- linux
+before_install:
+- test -n $CC  && unset CC
+- test -n $CXX && unset CXX
+- ./scripts/dependencies.sh
+script:
+- ./scripts/build.sh
+env:
+  global:
