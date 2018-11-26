@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #Install mpi
-sudo apt-get install libopenmpi-dev openmpi-bin libboost-dev
+sudo apt-get install -y libopenmpi-dev openmpi-bin libboost-test-dev
 
 #Install petsc
 wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.7.7.tar.gz

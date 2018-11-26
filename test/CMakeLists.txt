@@ -1,15 +1,13 @@
-find_package (Boost COMPONENTS system filesystem unit_test_framework REQUIRED)
+find_package (Boost COMPONENTS unit_test_framework REQUIRED)
 
 include_directories (${TEST_SOURCE_DIR}/src
         ${Boost_INCLUDE_DIRS})
 
 add_definitions (-DBOOST_TEST_DYN_LINK)
-add_executable (Test DummyTestSuite.cpp)
-target_link_libraries (Test
+add_executable (boost_test DummyTestSuite.cpp)
+target_link_libraries (boost_test
         ${PETSC_LIBRARIES}
         ns-eof
-        ${Boost_FILESYSTEM_LIBRARY}
-        ${Boost_SYSTEM_LIBRARY}
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
-add_test (NAME MyTest COMMAND Test)
+add_test (NAME NS-EOF-Test COMMAND boost_test)
