@@ -12,7 +12,7 @@ os:
 before_install:
 - ./scripts/dependencies.sh
 script:
-- ./build.sh --llvm-config=llvm-config --cc=clang --cxx=clang++
+- ./scripts/build.sh
 notifications:
   webhooks:
     urls:
