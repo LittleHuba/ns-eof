@@ -9,4 +9,6 @@ tar -xzf petsc-3.7.7.tar.gz
 cd petsc-3.7.7
 ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=0 --download-f2cblaslapack
 make
+#TODO can we make this path relative?
+make PETSC_DIR=/home/travis/build/LittleHuba/ns-eof/petsc-3.7.7 PETSC_ARCH=arch-linux2-c-debug test
 sudo make install
