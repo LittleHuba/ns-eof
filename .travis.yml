@@ -1,11 +1,13 @@
 language: cpp
 sudo: required
-dist: trusty
+dist: xenial
 cache: bundler
 addons:
   apt:
     packages:
     - cmake
+    sources:
+    - ubuntu-toolchain-r-test
 compiler:
 - mpicxx
 os:

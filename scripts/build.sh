@@ -3,6 +3,6 @@
 mkdir cmake-build-debug
 cd cmake-build-debug
 cmake ..
-make Test
+make boost_test
 cd test
-./Test
+./boost_test
