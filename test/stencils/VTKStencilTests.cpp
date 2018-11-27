@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
 
-        BOOST_TEST(vtkStencil->getPointsStream() == "# vtk DataFile Version 2.0\n"
+        BOOST_CHECK_EQUAL(vtkStencil->getPointsStream(), "# vtk DataFile Version 2.0\n"
                                                     "Some generic header information for whatever reason\n"
                                                     "ASCII\n"
                                                     "\n"
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
 
-        BOOST_TEST(vtkStencil->getPointsStream() == "# vtk DataFile Version 2.0\n"
+        BOOST_CHECK_EQUAL(vtkStencil->getPointsStream(), "# vtk DataFile Version 2.0\n"
                                                     "Some generic header information for whatever reason\n"
                                                     "ASCII\n"
                                                     "\n"
