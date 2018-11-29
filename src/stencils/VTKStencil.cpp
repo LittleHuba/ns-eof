@@ -45,7 +45,10 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     }
 
     this->_pointsStream << std::endl;
-    this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
+    if (parameters.geometry.dim == 2)
+        this->_pointsStream << "CELL_DATA " << cellsX * cellsY << std::endl;
+    else if (parameters.geometry.dim == 3)
+        this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
 
     // Set some parameters for the pressure and velocity streams
     this->_pressureStream.precision(6);

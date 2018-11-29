@@ -9,14 +9,11 @@
 #include <fstream>
 #include <sstream>
 
-class TestingVTKStencil;
-
 /** Stencil for writing VTK files
  *
  * When iterated with, creates a VTK file.
  */
 class VTKStencil : public FieldStencil<FlowField> {
-    friend class TestingVTKStencil;
 protected:
     std::stringstream _pointsStream;
     std::stringstream _pressureStream;
