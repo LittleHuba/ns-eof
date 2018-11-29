@@ -11,7 +11,8 @@
 class VelocityBufferReadStencil : public CommunicationStencil<Triple<FLOAT>>
 {
 public:
-    VelocityBufferReadStencil(const Parameters &parameters, int lowOffset, int highOffset);
+    explicit VelocityBufferReadStencil(const Parameters &parameters) : CommunicationStencil(parameters)
+    {}
     
     void applyLeftWall(FlowField &flowField, int i, int j) override;
     

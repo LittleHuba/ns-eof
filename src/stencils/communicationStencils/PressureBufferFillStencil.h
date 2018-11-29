@@ -13,7 +13,8 @@
 class PressureBufferFillStencil : public CommunicationStencil<FLOAT>
 {
 public:
-    PressureBufferFillStencil(const Parameters &parameters, int lowOffset, int highOffset);
+    explicit PressureBufferFillStencil(const Parameters &parameters) : CommunicationStencil(parameters)
+    {}
     
     void applyLeftWall(FlowField &flowField, int i, int j) override;
     

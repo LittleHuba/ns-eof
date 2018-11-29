@@ -21,13 +21,10 @@ class CommunicationStencil : public BoundaryStencil<FlowField>
 {
 protected:
     BufferValue **buffers = nullptr;
-    int lowOffset = 0, highOffset = 0;
     
 protected:
-    CommunicationStencil(const Parameters &parameters, int xOffset, int yOffset)
-            : BoundaryStencil(parameters), buffers(buffers), lowOffset(xOffset), highOffset(yOffset)
-    {}
-
+    explicit CommunicationStencil(const Parameters &parameters) : BoundaryStencil(parameters) {}
+    
 public:
     virtual void initializeBuffers(BufferValue **buffers)
     {

@@ -15,7 +15,7 @@
 #include <stencils/communicationStencils/VelocityBufferFillStencil.h>
 #include <stencils/communicationStencils/VelocityBufferReadStencil.h>
 
-typedef enum Tag {PRESSURE_TAG=0, VELOCITY_TAG=1, GENERIC_TAG=666} Tag;
+typedef enum Tag {PRESSURE_COMM=0, VELOCITY_COMM=1} Tag;
 
 class PetscParallelManager
 {
@@ -24,13 +24,18 @@ private:
     FlowField &flowField;
     int Nx, Ny, Nz;
     int sizes[NUMBER_OF_DIRECTIONS]; // Size of each boundary face of the cube
-    int rank;
+    int rank, dim, numberDirection;
     int neighbours[NUMBER_OF_DIRECTIONS]; // Ranks of neighbours
     
     FLOAT **pressureSendBuffers;
     FLOAT **pressureRecvBuffers;
     Triple<FLOAT> **velocitySendBuffers;
     Triple<FLOAT> **velocityRecvBuffers;
+
+    FLOAT *tempPressureSendBuffer;
+    FLOAT *tempPressureRecvBuffer;
+    Triple<FLOAT> *tempVelocitySendBuffer;
+    Triple<FLOAT> *tempVelocityRecvBuffer;
     
     PressureBufferFillStencil pressureSendStencil;
     PressureBufferReadStencil pressureRecvStencil;
@@ -76,8 +81,9 @@ private:
      * @param recvBuffer
      */
     template<class BufferValue>
-    void communicateValues(BufferValue **sendBuffer, BufferValue **recvBuffer, std::string commTypeStr);
+    void communicateValues(BufferValue **sendBuffer, BufferValue **recvBuffer, int COMM_TYPE);
 };
 
 
 #endif //NS_PETSPARALLELMANAGER_H
+

@@ -4,6 +4,7 @@
 #include <petscksp.h>
 #include <float.h>
 #include <mpi.h>
+#include <iomanip>  
 #include <parallelManagers/PetscParallelManager.h>
 #include "FlowField.h"
 #include "stencils/FGHStencil.h"
@@ -144,8 +145,23 @@ public:
         _solver.reInitMatrix();
     }
     
+    void printArray(int rank, std::string location){
+        std::cout << location << std::endl;
+        for(int j=_parameters.parallel.localSize[1]+2; j >= 0; j--){
+            for(int i=0; i <= _parameters.parallel.localSize[0]+2; i++){
+                std::cout << std::setprecision(3) << std::setw(10) << _flowField.getPressure().getScalar(i, j) << " ";
+                // std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[0] << " ";
+                // std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[1] << " ";
+                // std::cout << flowField->getVelocity().getVector(i , j)[1] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "\n" << std::endl;    
+    }   
+
     virtual void solveTimestep()
     {
+        // int rank = _parameters.parallel.rank;
         // determine and set max. timestep which is allowed in this simulation
         setTimeStep();
         // compute fgh
@@ -154,20 +170,23 @@ public:
         _wallFGHIterator.iterate();
         // compute the right hand side
         _rhsIterator.iterate();
+        // if(rank==1)printArray(1, "Before Pressure solve");
         // solve for pressure 
         _solver.solve();
-        
+        // if(rank==1)printArray(1, "After Pressure solve");
         // TODO WS2: communicate pressure values
         _parallelManager.exchangePressure();
+        // if(rank==1)printArray(1, "After Pressure exchange");
         
         // compute velocity
         _velocityIterator.iterate();
         // set obstacle boundaries
+        // if(rank==1)printArray(1, "After Velocity solve");
         _obstacleIterator.iterate();
-        
         // TODO WS2: communicate velocity values
+        // if(rank==1)printArray(1, "After boundary updates");
         _parallelManager.exchangeVelocity();
-        
+        // if(rank==1)printArray(1, "After velocity communication");
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
         

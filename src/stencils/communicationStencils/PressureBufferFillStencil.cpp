@@ -5,64 +5,74 @@
 #include "PressureBufferFillStencil.h"
 #include "Direction.h"
 
-PressureBufferFillStencil::PressureBufferFillStencil(const Parameters &parameters, int lowOffset, int highOffset)
-        : CommunicationStencil(parameters, lowOffset,
-                               highOffset)
-{}
-
 void PressureBufferFillStencil::applyLeftWall(FlowField &flowField, int i, int j)
 {
-    buffers[LEFT][j] = flowField.getPressure().getScalar(lowOffset + i, j);
+    //todo: check how to properly offset j in order to get a shorter array
+    buffers[LEFT][j-2] = flowField.getPressure().getScalar(i, j);
+
+    // if(_parameters.parallel.rank ==0) std::cout << "Pressure Left Wall " << i << " " << j << " " << flowField.getPressure().getScalar(i, j) << std::endl;
 }
 
 void PressureBufferFillStencil::applyRightWall(FlowField &flowField, int i, int j)
 {
-    buffers[RIGHT][j] = flowField.getPressure().getScalar(highOffset + i, j);
+    buffers[RIGHT][j-2] = flowField.getPressure().getScalar(i, j);
+    // if(_parameters.parallel.rank ==0) std::cout << "Pressure Right Wall " << i << " " << j << " " << flowField.getPressure().getScalar(i, j) << std::endl;
 }
 
 void PressureBufferFillStencil::applyBottomWall(FlowField &flowField, int i, int j)
 {
-    buffers[BOTTOM][i] = flowField.getPressure().getScalar(i, lowOffset + j);
+    buffers[BOTTOM][i-2] = flowField.getPressure().getScalar(i, j);
+    // if(_parameters.parallel.rank ==0) std::cout << "Pressure Bottom Wall " << i << " " << j << " " << flowField.getPressure().getScalar(i, j) << std::endl;
 }
 
 void PressureBufferFillStencil::applyTopWall(FlowField &flowField, int i, int j)
 {
-    buffers[TOP][i] = flowField.getPressure().getScalar(i, highOffset + j);
+    buffers[TOP][i-2] = flowField.getPressure().getScalar(i, j);
+    // if(_parameters.parallel.rank ==0) std::cout << "Pressure Top Wall " << i << " " << j << " " << flowField.getPressure().getScalar(i, j) << std::endl;
 }
 
 void PressureBufferFillStencil::applyLeftWall(FlowField &flowField, int i, int j, int k)
 {
-    int Nk = flowField.getCellsZ();
-    buffers[LEFT][j * Nk + k] = flowField.getPressure().getScalar(lowOffset + i, j, k); // stored k-wise
+    // int Nk = flowField.getCellsZ() - 1;
+    int Nk = _parameters.parallel.localSize[2];
+    // if(_parameters.parallel.rank==0) std::cout << "Left Wall Fill" << "(" << i << ", " << j << ", " << k << ") " << (j-2) * Nk + (k-2) << std::endl;
+    buffers[LEFT][(j-2) * Nk + (k-2)] = flowField.getPressure().getScalar(i, j, k); // stored k-wise
 }
 
 void PressureBufferFillStencil::applyRightWall(FlowField &flowField, int i, int j, int k)
 {
-    int Nk = flowField.getCellsZ();
-    buffers[RIGHT][j * Nk + k] = flowField.getPressure().getScalar(highOffset + i, j, k); // stored k-wise
+    // int Nk = flowField.getCellsZ() - 1;
+    int Nk = _parameters.parallel.localSize[2];
+    // if(_parameters.parallel.rank==0) std::cout << "Right Wall Fill" << "(" << i << ", " << j << ", " << k << ") " << (j-2) * Nk + (k-2) << std::endl;
+    buffers[RIGHT][(j-2) * Nk + (k-2)] = flowField.getPressure().getScalar(i , j, k); // stored k-wise
 }
 
 void PressureBufferFillStencil::applyBottomWall(FlowField &flowField, int i, int j, int k)
 {
-    int Nk = flowField.getCellsZ();
-    buffers[BOTTOM][i * Nk + k] = flowField.getPressure().getScalar(i, lowOffset + j, k); // stored k-wise
+    // int Nk = flowField.getCellsZ() - 1;
+    int Nk = _parameters.parallel.localSize[2];
+    buffers[BOTTOM][(i-2) * Nk + (k-2)] = flowField.getPressure().getScalar(i, j, k); // stored k-wise
 }
 
 void PressureBufferFillStencil::applyTopWall(FlowField &flowField, int i, int j, int k)
 {
-    int Nk = flowField.getCellsZ();
-    buffers[TOP][i * Nk + k] = flowField.getPressure().getScalar(i, highOffset + j, k); // stored k-wise
+    // int Nk = flowField.getCellsZ() - 1;
+    int Nk = _parameters.parallel.localSize[2];
+    buffers[TOP][(i-2) * Nk + (k-2)] = flowField.getPressure().getScalar(i, j, k); // stored k-wise
 }
 
 void PressureBufferFillStencil::applyFrontWall(FlowField &flowField, int i, int j, int k)
 {
-    int Nj = flowField.getCellsY();
-    buffers[FRONT][i * Nj + j] = flowField.getPressure().getScalar(i, j, lowOffset + k); // stored j-wise
+    //Here we assume low k is front!
+    // int Nj = flowField.getCellsY() - 1;
+    int Nj = _parameters.parallel.localSize[1];
+    buffers[FRONT][(i-2) * Nj + (j-2)] = flowField.getPressure().getScalar(i, j, k); // stored j-wise
 }
 
 void PressureBufferFillStencil::applyBackWall(FlowField &flowField, int i, int j, int k)
 {
-    int Nj = flowField.getCellsY();
-    buffers[BACK][i * Nj + j] = flowField.getPressure().getScalar(i, j, highOffset + k); // stored j-wise
+    // int Nj = flowField.getCellsY() - 1;
+    int Nj = _parameters.parallel.localSize[1];
+    buffers[BACK][(i-2) * Nj + (j-2)] = flowField.getPressure().getScalar(i, j, k); // stored j-wise
 }
 
