@@ -45,9 +45,18 @@ public:
     void apply(FlowField &flowField, int i, int j, int k) override;
 
     /** Writes the information to the file
-         * @param flowField Flow field to be written
-         */
-    virtual void write(FlowField &flowField, int timeStep);
+     * @param flowField Flow field to be written
+     * @param timeStep The timestep to write
+     * @param vtkFile Used for testing (to redirect output to internal testing stream)
+     */
+    void write(FlowField &flowField, int timeStep);
+
+    /** Writes the information to the file
+     * @param flowField Flow field to be written
+     * @param timeStep The timestep to write
+     * @param vtkFile Used for testing (to redirect output to internal testing stream)
+     */
+    void write(FlowField &flowField, int timeStep, std::ofstream &vtkFile);
 
 };
 
