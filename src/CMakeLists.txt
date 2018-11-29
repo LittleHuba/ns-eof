@@ -49,6 +49,10 @@ add_library(ns-eof
         stencils/VTKStencil.cpp
 	stencils/TurbulentViscosityStencil.h
 	stencils/TurbulentViscosityStencil.cpp
+        stencils/ObstacleDistanceStencil.h
+        stencils/ObstacleDistanceStencil.cpp
+        stencils/WallDistanceStencil.h
+        stencils/WallDistanceStencil.cpp
         Configuration.cpp
         Configuration.h
         DataStructures.cpp
@@ -68,7 +72,7 @@ add_library(ns-eof
         SimpleTimer.cpp
         SimpleTimer.h
         Simulation.h
-        Stencil.h)
+        Stencil.h TurbulentSimulation.h)
 target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
 add_executable(ns main.cpp)
