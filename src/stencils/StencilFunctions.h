@@ -64,6 +64,17 @@ inline void loadLocalViscosity2D(FlowField & flowField, FLOAT * const localVisco
     }
 }
 
+//load local Viscosity for 3D
+inline void loadLocalViscosity3D(FlowField & flowField, FLOAT * const localViscosity, int i, int j, int k){
+    for ( int layer = -1; layer <= 1; layer ++ ){
+        for (int row = -1; row <= 1; row++ ){
+            for ( int column = -1; column <= 1; column ++ ){
+                localViscosity[39 + 27*layer + 9*row + 3*column]=flowField.getTurbulentViscosity().getScalar(i+column,j+row,k+layer);
+            }
+        }
+    }
+}
+
 // Maps an index and a component to the corresponding value in the cube.
 inline int mapd (int i, int j, int k, int component){
    return 39 + 27*k + 9*j + 3*i + component;
@@ -71,12 +82,24 @@ inline int mapd (int i, int j, int k, int component){
 
 // Derivative functions. They are applied to a cube of 3x3x3 cells. lv stands for the local velocity, lm represents the local mesh sizes
 // dudx <-> first derivative of u-component of velocity field w.r.t. x-direction
-inline FLOAT dudx ( const FLOAT * const lv, const FLOAT * const lm ) {
+inline FLOAT dudx_b ( const FLOAT * const lv, const FLOAT * const lm ) {
     //double tmp1= ( lv [mapd(0,0,0,0)] - lv [mapd(-1,0,0,0)] ) / GeometricParameters::dx;
 
     // evaluate dudx in the cell center by a central difference
     const int index0 = mapd(0,0,0,0);
     const int index1 = mapd(-1,0,0,0);
+    return  ( lv [index0] - lv [index1] ) / lm[index0];
+    /*if (fabs(tmp1-tmp2) > 1.0e-12){handleError(1, "dudx");}
+
+    return tmp2;*/
+}
+
+inline FLOAT dudx_f ( const FLOAT * const lv, const FLOAT * const lm ) {
+    //double tmp1= ( lv [mapd(0,0,0,0)] - lv [mapd(-1,0,0,0)] ) / GeometricParameters::dx;
+
+    // evaluate dudx in the cell center by a central difference
+    const int index0 = mapd(1,0,0,0);
+    const int index1 = mapd(0,0,0,0);
     return  ( lv [index0] - lv [index1] ) / lm[index0];
     /*if (fabs(tmp1-tmp2) > 1.0e-12){handleError(1, "dudx");}
 
@@ -104,7 +127,7 @@ inline FLOAT dnudz ( const FLOAT * const localViscosity, const FLOAT * const lm 
 }
 
 
-inline FLOAT dvdy ( const FLOAT * const lv, const FLOAT * const lm ) {
+inline FLOAT dvdy_b ( const FLOAT * const lv, const FLOAT * const lm ) {
     //double tmp1= ( lv [mapd(0,0,0,1)] - lv [mapd(0,-1,0,1)] ) / GeometricParameters::dy;
     const int index0 = mapd(0, 0,0,1);
     const int index1 = mapd(0,-1,0,1);
@@ -114,8 +137,18 @@ inline FLOAT dvdy ( const FLOAT * const lv, const FLOAT * const lm ) {
 
     return tmp2;*/
 }
+inline FLOAT dvdy_f ( const FLOAT * const lv, const FLOAT * const lm ) {
+    //double tmp1= ( lv [mapd(0,0,0,1)] - lv [mapd(0,-1,0,1)] ) / GeometricParameters::dy;
+    const int index0 = mapd(0, 1,0,1);
+    const int index1 = mapd(0,0,0,1);
+    return ( lv [index0] - lv [index1] ) / lm[index0];
 
-inline FLOAT dwdz ( const FLOAT * const lv, const FLOAT * const lm ) {
+    /*if (fabs(tmp1-tmp2) > 1.0e-12){handleError(1, "dvdy");}
+
+    return tmp2;*/
+}
+
+inline FLOAT dwdz_b ( const FLOAT * const lv, const FLOAT * const lm ) {
     //double tmp1= ( lv [mapd(0,0,0,2)] - lv [mapd(0,0,-1,2)] ) / GeometricParameters::dz;
     const int index0 = mapd(0,0, 0,2);
     const int index1 = mapd(0,0,-1,2);
@@ -126,6 +159,16 @@ inline FLOAT dwdz ( const FLOAT * const lv, const FLOAT * const lm ) {
     return tmp2;*/
 }
 
+inline FLOAT dwdz_f ( const FLOAT * const lv, const FLOAT * const lm ) {
+    //double tmp1= ( lv [mapd(0,0,0,2)] - lv [mapd(0,0,-1,2)] ) / GeometricParameters::dz;
+    const int index0 = mapd(0,0, 1,2);
+    const int index1 = mapd(0,0,0,2);
+    return ( lv [index0] - lv [index1] ) / lm[index0];
+
+    /*if (fabs(tmp1-tmp2) > 1.0e-12){handleError(1, "dwdz");}
+
+    return tmp2;*/
+}
 
 // second derivative of u-component w.r.t. x-direction, evaluated at the location of the u-component
 inline FLOAT d2udx2 ( const FLOAT * const lv, const FLOAT * const lm ) {
@@ -857,6 +900,56 @@ inline FLOAT dwdx_k1 ( const FLOAT * const lv, const FLOAT * const lm ) {
 
     return firstOrder;
 }
+/** evaluates first forward derivative w.r.t. y for u at location of u-component i-1. */
+inline FLOAT dudy_i1 ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+    const FLOAT hy = 0.5*(lm[mapd(-1,0,0,1)]+lm[mapd(-1,1,0,1)]);       // distance of corner points in y-direction from center v-value
+
+    const FLOAT u0 = lv[mapd(-1,0,0,0)];
+    const FLOAT u1= lv[mapd(-1,1,0,0)];
+
+    const FLOAT firstOrder  = (u1-u0)/hy;
+
+    return firstOrder;
+}
+
+/** evaluates first forward derivative w.r.t. x for w at location of w-component k-1. */
+inline FLOAT dwdy_k1 ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+    const FLOAT hy = 0.5*(lm[mapd(0,0,-1,1)]+lm[mapd(0,1,-1,1)]);
+
+    const FLOAT w0 = lv[mapd(0,0,-1,2)];
+    const FLOAT w1= lv[mapd(0,1,-1,2)];
+
+    const FLOAT firstOrder  = (w1-w0)/hy;
+
+    return firstOrder;
+}
+
+/** evaluates first forward derivative w.r.t. z for u at location of u-component. i-1 */
+inline FLOAT dudz_i1 ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+    const FLOAT hz = 0.5*(lm[mapd(-1,0,0,2)]+lm[mapd(-1,0,1,2)]);
+
+    const FLOAT u0 = lv[mapd(-1,0,0,0)];
+    const FLOAT u1= lv[mapd(-1,0,1,0)];
+
+    const FLOAT firstOrder  = (u1-u0)/hz;
+
+    return firstOrder;
+}
+/** evaluates first forward derivative w.r.t. z for v at location of v-component.j-1 */
+inline FLOAT dvdz_j1 ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+    const FLOAT hz = 0.5*(lm[mapd(0,-1,0,2)]+lm[mapd(0,-1,1,2)]);
+
+    const FLOAT v0 = lv[mapd(0,-1,0,1)];
+    const FLOAT v1= lv[mapd(0,-1,1,1)];
+
+    const FLOAT firstOrder  = (v1-v0)/hz;
+
+    return firstOrder;
+}
 
 inline FLOAT computeF2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
     return localVelocity [mapd(0,0,0,0)]
@@ -943,7 +1036,7 @@ inline FLOAT vt_interpolate( const FLOAT * const localViscosity, const FLOAT * c
 
 inline FLOAT computeTurbulentF2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const FLOAT * localViscosity, const Parameters & parameters, FLOAT dt){
     return localVelocity [mapd(0,0,0,0)]
-           + dt*(2*(dnudx(localViscosity,localMeshsize)*dudx(localVelocity,localMeshsize)+(localViscosity[mapd(0,0,0,0)]+1/(parameters.flow.Re))*d2udx2(localVelocity,localMeshsize))+
+           + dt*(2*(dnudx(localViscosity,localMeshsize)*dudx_b(localVelocity,localMeshsize)+(localViscosity[mapd(0,0,0,0)]+1/(parameters.flow.Re))*d2udx2(localVelocity,localMeshsize))+
             1/localMeshsize[mapd(0,0,0,1)]*((1 / parameters.flow.Re + vt_interpolate(localViscosity,localMeshsize,1,1,2)) *
             (dudyf(localVelocity,localMeshsize)+dvdxf(localVelocity,localMeshsize))-
             (vt_interpolate(localViscosity,localMeshsize,1,0,2)+1/parameters.flow.Re)*(dudyb(localVelocity,localMeshsize)+dvdx_j1(localVelocity,localMeshsize)))
@@ -960,30 +1053,36 @@ inline FLOAT computeTurbulentG2D(const FLOAT * const localVelocity, const FLOAT 
 }
 
 
-inline FLOAT computeTurbulentF3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
-    return localVelocity [mapd(0,0,0,0)]
-           +  dt * ( 1 / parameters.flow.Re * ( d2udx2 ( localVelocity, localMeshsize )
-                                                + d2udy2 ( localVelocity, localMeshsize ) + d2udz2 ( localVelocity, localMeshsize ) )
-                     - du2dx ( localVelocity, parameters, localMeshsize ) - duvdy ( localVelocity, parameters, localMeshsize )
-                     - duwdz ( localVelocity, parameters, localMeshsize ) + parameters.environment.gx );
-}
-
-
-inline FLOAT computeTurbulentG3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
+inline FLOAT computeTurbulentF3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const FLOAT * localViscosity, const Parameters & parameters, FLOAT dt){
     return localVelocity [mapd(0,0,0,1)]
-           +  dt * ( 1 / parameters.flow.Re * ( d2vdx2 ( localVelocity, localMeshsize )
-                                                + d2vdy2 ( localVelocity, localMeshsize ) + d2vdz2 ( localVelocity, localMeshsize ) )
-                     - dv2dy ( localVelocity, parameters, localMeshsize ) - duvdx ( localVelocity, parameters, localMeshsize )
-                     - dvwdz ( localVelocity, parameters, localMeshsize ) + parameters.environment.gy );
+           +  dt * (1/localMeshsize[mapd(0,0,0,1)]*((vt_interpolate(localViscosity,localMeshsize,1,1,2)+1/parameters.flow.Re)*(dudyf(localVelocity,localMeshsize)+dvdxf(localVelocity,localMeshsize))
+            -(vt_interpolate(localViscosity,localMeshsize,1,0,2)+1/parameters.flow.Re)*(dudyb(localVelocity,localMeshsize)+dvdx_j1(localVelocity,localMeshsize)))
+            +2*(dnudx(localViscosity,localMeshsize)*dudx_f(localVelocity,localMeshsize)+((localViscosity[mapd(0,0,0,0)])+1/parameters.flow.Re)*d2udx2(localVelocity,localMeshsize))
+            +1/localMeshsize[mapd(0,0,0,2)]*((vt_interpolate(localViscosity,localMeshsize,1,2,1)+1/parameters.flow.Re)*(dudzf(localVelocity,localMeshsize)+dwdxf(localVelocity,localMeshsize))
+            -(vt_interpolate(localViscosity,localMeshsize,1,2,0)+1/parameters.flow.Re)*(dudzb(localVelocity,localMeshsize)+dwdx_k1(localVelocity,localMeshsize)))
+            + parameters.environment.gx);
 }
 
 
-inline FLOAT computeTurbulentH3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
-    return localVelocity [mapd(0,0,0,2)]
-           +  dt * ( 1 / parameters.flow.Re * ( d2wdx2 ( localVelocity, localMeshsize )
-                                                + d2wdy2 ( localVelocity, localMeshsize ) + d2wdz2 ( localVelocity, localMeshsize ) )
-                     - dw2dz ( localVelocity, parameters, localMeshsize ) - duwdx ( localVelocity, parameters, localMeshsize )
-                     - dvwdy ( localVelocity, parameters, localMeshsize ) + parameters.environment.gz );
+inline FLOAT computeTurbulentG3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const FLOAT * localViscosity, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,1)]
+           +  dt * (1/localMeshsize[mapd(0,0,0,0)]*((vt_interpolate(localViscosity,localMeshsize,1,1,2)+1/parameters.flow.Re)*(dvdxf(localVelocity,localMeshsize)+dudyf(localVelocity,localMeshsize))
+            -(vt_interpolate(localViscosity,localMeshsize,0,1,2)+1/parameters.flow.Re)*(dvdxb(localVelocity,localMeshsize)+dudy_i1(localVelocity,localMeshsize)))
+            +2*(dnudy(localViscosity,localMeshsize)*dvdy_f(localVelocity,localMeshsize)+((localViscosity[mapd(0,0,0,0)])+1/parameters.flow.Re)*d2vdy2(localVelocity,localMeshsize))
+            +1/localMeshsize[mapd(0,0,0,2)]*((vt_interpolate(localViscosity,localMeshsize,2,1,1)+1/parameters.flow.Re)*(dvdzf(localVelocity,localMeshsize)+dwdyf(localVelocity,localMeshsize))
+            -(vt_interpolate(localViscosity,localMeshsize,2,1,0)+1/parameters.flow.Re)*(dvdzb(localVelocity,localMeshsize)+dwdy_k1(localVelocity,localMeshsize)))
+            + parameters.environment.gy);
+
+}
+
+inline FLOAT computeTurbulentH3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const FLOAT * localViscosity, const Parameters & parameters, FLOAT dt){
+    return localVelocity [mapd(0,0,0,1)]
+           +  dt * (1/localMeshsize[mapd(0,0,0,0)]*((vt_interpolate(localViscosity,localMeshsize,1,2,1)+1/parameters.flow.Re)*(dwdxf(localVelocity,localMeshsize)+dudzf(localVelocity,localMeshsize))
+            -(vt_interpolate(localViscosity,localMeshsize,0,2,1)+1/parameters.flow.Re)*(dwdxb(localVelocity,localMeshsize)+dudz_i1(localVelocity,localMeshsize)))
+            +2*(dnudz(localViscosity,localMeshsize)*dwdz_f(localVelocity,localMeshsize)+((localViscosity[mapd(0,0,0,0)])+1/parameters.flow.Re)*d2wdz2(localVelocity,localMeshsize))
+            +1/localMeshsize[mapd(0,0,0,1)]*((vt_interpolate(localViscosity,localMeshsize,2,1,1)+1/parameters.flow.Re)*(dwdyf(localVelocity,localMeshsize)+dvdzf(localVelocity,localMeshsize))
+            -(vt_interpolate(localViscosity,localMeshsize,2,0,1)+1/parameters.flow.Re)*(dwdyb(localVelocity,localMeshsize)+dvdz_j1(localVelocity,localMeshsize)))
+            + parameters.environment.gz);
 }
 
 
