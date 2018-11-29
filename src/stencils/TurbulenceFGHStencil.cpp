@@ -35,15 +35,16 @@ void TurbulenceFGHStencil::apply ( FlowField & flowField, int i, int j, int k ){
 
         loadLocalVelocity3D(  flowField, _localVelocity, i, j, k);
         loadLocalMeshsize3D(_parameters, _localMeshsize, i, j, k);
+        loadLocalViscosity3D( flowField, _localViscosity, i, j,k);
 
         if ((obstacle & OBSTACLE_RIGHT) == 0) { // If the right cell is fluid
-            values [0] = computeF3D(_localVelocity, _localMeshsize, _parameters, _parameters.timestep.dt);
+            values [0] = computeTurbulentF3D(_localVelocity, _localMeshsize, _localViscosity, _parameters, _parameters.timestep.dt);
         }
         if ((obstacle & OBSTACLE_TOP) == 0) {
-            values [1] = computeG3D(_localVelocity, _localMeshsize, _parameters, _parameters.timestep.dt);
+            values [1] = computeTurbulentG3D(_localVelocity, _localMeshsize, _localViscosity, _parameters, _parameters.timestep.dt);
         }
         if ((obstacle & OBSTACLE_BACK) == 0) {
-            values [2] = computeH3D(_localVelocity, _localMeshsize, _parameters, _parameters.timestep.dt);
+            values [2] = computeTurbulentH3D(_localVelocity, _localMeshsize, _localViscosity, _parameters, _parameters.timestep.dt);
         }
     }
 }
