@@ -131,9 +131,6 @@ public:
      * @return Scalar field witht the distance to the nearest wall
      */
     ScalarField & getNearestWallDistance();
-
-    void getViscosityPressureAndVelocity(FLOAT &viscosity, FLOAT &pressure, FLOAT* const velocity, int i, int j);
-    void getViscosityPressureAndVelocity(FLOAT &viscosity, FLOAT &pressure, FLOAT* const velocity, int i, int j, int k);
 };
 
 #endif
