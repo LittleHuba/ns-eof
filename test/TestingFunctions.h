@@ -13,19 +13,24 @@ class DummyParameters {
     Parameters *parameters;
 
 public:
-    explicit DummyParameters(int dimensions) {
+    explicit DummyParameters(int dimensions, int cellsPerDim = 2) {
         parameters = new Parameters();
         parameters->parallel.rank = 0;
-        parameters->parallel.localSize[0] = 2;
-        parameters->parallel.localSize[1] = 2;
+        parameters->parallel.localSize[0] = cellsPerDim;
+        parameters->parallel.localSize[1] = cellsPerDim;
         if (dimensions == 3)
-            parameters->parallel.localSize[2] = 2;
+            parameters->parallel.localSize[2] = cellsPerDim;
         else
             parameters->parallel.localSize[2] = 0;
 
         parameters->parallel.firstCorner[0] = 0;
         parameters->parallel.firstCorner[1] = 0;
         parameters->parallel.firstCorner[2] = 0;
+
+        parameters->parallel.topNb = -1;
+        parameters->parallel.leftNb = -1;
+        parameters->parallel.bottomNb = -1;
+        parameters->parallel.rightNb = -1;
 
         parameters->geometry.dim = dimensions;
 
@@ -37,11 +42,11 @@ public:
         else
             parameters->geometry.lengthZ = 0;
 
-        parameters->geometry.sizeX = 2;
-        parameters->geometry.sizeY = 2;
+        parameters->geometry.sizeX = cellsPerDim;
+        parameters->geometry.sizeY = cellsPerDim;
 
         if (dimensions == 3)
-            parameters->geometry.sizeZ = 2;
+            parameters->geometry.sizeZ = cellsPerDim;
         else
             parameters->geometry.sizeZ = 1;
 
