@@ -2,6 +2,7 @@
 #include "3rdparty/tinyxml2/tinyxml2.h"
 #include <string>
 #include "Parameters.h"
+#include <mpi.h>
 
 void readFloatMandatory(FLOAT & storage, tinyxml2::XMLElement *node, const char* tag){
     double value;   // Use to be able to select precision
