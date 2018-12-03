@@ -11,6 +11,7 @@ add_executable (boost_test
         DummyTestSuite.cpp
         stencils/VTKStencilTests.cpp
         stencils/TurbulenceVTKStencilTests.cpp
+        stencils/WallDistanceStencilsTests.cpp
         TestingFunctions.h)
 
 target_link_libraries (boost_test

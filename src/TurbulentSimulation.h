@@ -17,9 +17,9 @@ protected:
     FieldIterator<FlowField> _obstacleDistanceIterator;
 public:
     TurbulentSimulation(Parameters &parameters, FlowField &flowField) :
-    _wallDistanceStencil(parameters),
-    _obstacleDistanceStencil(parameters, flowField),
-    _wallDistanceIterator(flowField, parameters, _wallDistanceStencil),
+    _wallDistanceStencil(parameters, flowField),
+    _obstacleDistanceStencil(parameters),
+    _wallDistanceIterator(flowField, parameters, _wallDistanceStencil, 2, -1),
     _obstacleDistanceIterator(flowField, parameters, _obstacleDistanceStencil, 1),
     Simulation(parameters, flowField) {
 
