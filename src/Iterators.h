@@ -27,9 +27,11 @@ public:
      */
     Iterator(FlowField &flowfield, const Parameters &parameters) : _flowField(flowfield), _parameters(parameters) {}
 
-    /** Perform the stencil operation on inner, non-ghost cells
-     */
-    virtual void iterate() = 0;
+        virtual ~Iterator() = default;
+
+        /** Perform the stencil operation on inner, non-ghost cells
+         */
+        virtual void iterate() = 0;
 };
 
 template<class FlowField>

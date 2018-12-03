@@ -45,7 +45,10 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     }
 
     this->_pointsStream << std::endl;
-    this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
+    if (parameters.geometry.dim == 2)
+        this->_pointsStream << "CELL_DATA " << cellsX * cellsY << std::endl;
+    else if (parameters.geometry.dim == 3)
+        this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
 
     // Set some parameters for the pressure and velocity streams
     this->_pressureStream.precision(6);
@@ -97,28 +100,32 @@ inline void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
 }
 
 void VTKStencil::write(FlowField &flowField, int timeStep) {
+    std::ofstream vtkFile;
+    write(flowField, timeStep, &vtkFile);
+}
+
+void VTKStencil::write(FlowField &flowField, int timeStep, std::basic_ofstream<char> *vtkFile) {
     std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 
-    std::ofstream vtkFile;
-    vtkFile.open(filename);
-    if (vtkFile.is_open()) {
+    vtkFile->open(filename);
+    if (vtkFile->is_open()) {
         // Write the header and points to the file
-        vtkFile << this->_pointsStream.str();
+        *vtkFile << this->_pointsStream.str();
 
         // Write the pressure data to the file
-        vtkFile << "SCALARS pressure float 1" << std::endl;
-        vtkFile << "LOOKUP_TABLE default" << std::endl;
-        vtkFile << this->_pressureStream.rdbuf();
+        *vtkFile << "SCALARS pressure float 1" << std::endl;
+        *vtkFile << "LOOKUP_TABLE default" << std::endl;
+        *vtkFile << this->_pressureStream.rdbuf();
 
         // Write the velocity data to the file
-        vtkFile << std::endl;
-        vtkFile << "VECTORS velocity float" << std::endl;
-        vtkFile << this->_velocityStream.rdbuf();
-        vtkFile << std::endl << std::endl;
+        *vtkFile << std::endl;
+        *vtkFile << "VECTORS velocity float" << std::endl;
+        *vtkFile << this->_velocityStream.rdbuf();
+        *vtkFile << std::endl << std::endl;
 
-        vtkFile.close();
+        vtkFile->close();
     } else std::cerr << "Unable to open vtk output file for timestep " << timeStep << std::endl;
 
     // Empty the data streams for the next timestep
