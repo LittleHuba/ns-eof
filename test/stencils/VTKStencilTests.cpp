@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
     }
 
     BOOST_AUTO_TEST_CASE(apply2DCheckPressure) {
-        auto *parameters = new DummyParameters(2);
+        auto parameters = new DummyParameters(2);
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
     }
 
     BOOST_AUTO_TEST_CASE(apply2DCheckVelocity) {
-        auto *parameters = new DummyParameters(2);
+        auto parameters = new DummyParameters(2);
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
     }
 
     BOOST_AUTO_TEST_CASE(apply3DCheckPressure) {
-        auto *parameters = new DummyParameters(3);
+        auto parameters = new DummyParameters(3);
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
     }
 
     BOOST_AUTO_TEST_CASE(apply3DCheckVelocity) {
-        auto *parameters = new DummyParameters(3);
+        auto parameters = new DummyParameters(3);
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
     }
 
     BOOST_AUTO_TEST_CASE(write2D) {
-        auto *parameters = new DummyParameters(2);
+        auto parameters = new DummyParameters(2);
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         vtkIterator->iterate();
 
         testing_ofstream outputFileStream;
-        vtkStencil->write(*flowField, 0, outputFileStream);
+        vtkStencil->write(*flowField, 0, &outputFileStream);
 
         BOOST_CHECK_EQUAL(outputFileStream.str(), "# vtk DataFile Version 2.0\n"
                                                   "Some generic header information for whatever reason\n"
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
     }
 
     BOOST_AUTO_TEST_CASE(write3D) {
-        auto *parameters = new DummyParameters(3);
+        auto parameters = new DummyParameters(3);
         auto vtkStencil = new TestingVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         vtkIterator->iterate();
 
         testing_ofstream outputFileStream;
-        vtkStencil->write(*flowField, 0, outputFileStream);
+        vtkStencil->write(*flowField, 0, &outputFileStream);
 
         BOOST_CHECK_EQUAL(outputFileStream.str(), "# vtk DataFile Version 2.0\n"
                                                   "Some generic header information for whatever reason\n"

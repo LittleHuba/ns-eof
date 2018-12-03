@@ -59,24 +59,12 @@ public:
     }
 };
 
-class testing_ofstream : public std::ofstream {
+class testing_ofstream : public std::basic_ofstream<char> {
 private:
     std::stringstream testingStream;
 public:
     testing_ofstream() : std::ofstream() {
         std::ios::rdbuf(testingStream.rdbuf());
-    }
-
-    void open(const std::string &__s, std::ios_base::openmode __mode = std::ios_base::out) {
-        // Do nothing here as we do not actually want to write to a file
-    }
-
-    bool is_open() {
-        return true;
-    }
-
-    void close() {
-        // Do nothing here as we do not actually want to write to a file
     }
 
     std::string str() {
