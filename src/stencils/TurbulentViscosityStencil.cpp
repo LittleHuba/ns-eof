@@ -10,7 +10,8 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
     loadLocalVelocity2D(  flowField, _localVelocity, i, j);
     loadLocalMeshsize2D(_parameters, _localMeshsize, i, j);
 
-    flowField.getTurbulentViscosity().getScalar(i,j)=computeSTP2D(_localVelocity, _localMeshsize); //TODO add mixing length
+    flowField.getTurbulentViscosity().getScalar(i,j)=flowField.getNearestWallDistance().getScalar(i,j)*flowField.getNearestWallDistance().getScalar(i,j)
+            *computeSTP2D(_localVelocity, _localMeshsize);
 }
 
 
@@ -25,7 +26,8 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j, int k)
         loadLocalMeshsize3D(_parameters, _localMeshsize, i, j, k);
 
 
-        flowField.getTurbulentViscosity().getScalar(i,j,k)=computeSTP3D(_localVelocity, _localMeshsize); //TODO add mixing length
+        flowField.getTurbulentViscosity().getScalar(i,j,k)=flowField.getNearestWallDistance().getScalar(i,j,k)*flowField.getNearestWallDistance().getScalar(i,j,k)
+                *computeSTP3D(_localVelocity, _localMeshsize);
 
 
     }
