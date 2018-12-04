@@ -17,7 +17,7 @@ public:
     /** Constructor
      *
      */
-    explicit ObstacleDistanceStencil(const Parameters &parameters, FlowField &flowField);
+    explicit ObstacleDistanceStencil(const Parameters &parameters);
 
     /** 2D operation for one position
      *

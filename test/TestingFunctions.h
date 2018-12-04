@@ -31,6 +31,8 @@ public:
         parameters->parallel.leftNb = -1;
         parameters->parallel.bottomNb = -1;
         parameters->parallel.rightNb = -1;
+        parameters->parallel.frontNb = -1;
+        parameters->parallel.backNb = -1;
 
         parameters->geometry.dim = dimensions;
 
