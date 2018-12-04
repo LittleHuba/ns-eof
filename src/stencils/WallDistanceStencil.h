@@ -6,12 +6,12 @@
 #define NS_WALLDISTANCESTENCIL_H
 
 
-#include <FlowField.h>
-#include <Stencil.h>
+#include "../FlowField.h"
+#include "../Stencil.h"
 
 class WallDistanceStencil : public BoundaryStencil<FlowField> {
 public:
-    WallDistanceStencil(const Parameters &parameters);
+    WallDistanceStencil(const Parameters &parameters, FlowField &flowField);
 
     void applyLeftWall(FlowField &flowField, int i, int j) override;
 
