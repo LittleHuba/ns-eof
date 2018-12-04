@@ -33,6 +33,7 @@ public:
      * @param i Position in the x direction
      * @param j Position in the y direction
      */
+
     void apply(FlowField &flowField, int i, int j) override;
 
     /** 3D operation for one position
@@ -45,18 +46,15 @@ public:
     void apply(FlowField &flowField, int i, int j, int k) override;
 
     /** Writes the information to the file
-     * @param flowField Flow field to be written
      * @param timeStep The timestep to write
-     * @param vtkFile Used for testing (to redirect output to internal testing stream)
      */
-    void write(FlowField &flowField, int timeStep);
+    void write(int timeStep);
 
     /** Writes the information to the file
-     * @param flowField Flow field to be written
      * @param timeStep The timestep to write
      * @param vtkFile Used for testing (to redirect output to internal testing stream)
      */
-    void write(FlowField &flowField, int timeStep, std::ofstream &vtkFile);
+    void write(int timeStep, std::ofstream &vtkFile);
 
 };
 

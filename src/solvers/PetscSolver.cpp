@@ -360,7 +360,7 @@ PetscErrorCode computeMatrix2D(KSP ksp, Mat A, Mat pc, MatStructure * matStructu
     Nx = parameters.geometry.sizeX + 2;
     Ny = parameters.geometry.sizeY + 2;
 
-    std::cout << "Limits= " << limitsX[0] << ", " << limitsX[1] << "; " << limitsY[0] << " , " << limitsY[1] << std::endl;
+//    std::cout << "Limits= " << limitsX[0] << ", " << limitsX[1] << "; " << limitsY[0] << " , " << limitsY[1] << std::endl;
     // Loop for inner nodes
     for (j = limitsY[0]; j < limitsY[1]; j++){
         for (i = limitsX[0]; i < limitsX[1]; i++){

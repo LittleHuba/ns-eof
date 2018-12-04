@@ -8,7 +8,8 @@ add_definitions (-DBOOST_TEST_DYN_LINK)
 include_directories(stencils)
 
 add_executable (boost_test
-        DummyTestSuite.cpp
+        test_main.cpp
+        stencils/communicationStencils/Direction.test.cpp
         stencils/VTKStencilTests.cpp)
 
 target_link_libraries (boost_test
