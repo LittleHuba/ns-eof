@@ -5,8 +5,14 @@ include_directories (${TEST_SOURCE_DIR}/src
 
 add_definitions (-DBOOST_TEST_DYN_LINK)
 
-add_executable (Test test_main.cpp stencils/communicationStencils/Direction.test.cpp)
-target_link_libraries (Test
+include_directories(stencils)
+
+add_executable (boost_test
+        test_main.cpp
+        stencils/communicationStencils/Direction.test.cpp
+        stencils/VTKStencilTests.cpp)
+
+target_link_libraries (boost_test
         ${PETSC_LIBRARIES}
         ns-eof
         ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
