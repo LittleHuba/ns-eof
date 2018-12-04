@@ -795,7 +795,7 @@ BOOST_AUTO_TEST_SUITE(WallDistanceStencilsTests)
         delete parameters;
     }
 
-    BOOST_AUTO_TEST_CASE(leftWallObstacle2D) {
+    BOOST_AUTO_TEST_CASE(obstacle2D) {
         auto parameters = new DummyParameters(2, 10);
 
         // Set wall condition
