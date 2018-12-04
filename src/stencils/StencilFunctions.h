@@ -951,6 +951,136 @@ inline FLOAT dvdz_j1 ( const FLOAT * const lv, const FLOAT * const lm ) {
     return firstOrder;
 }
 
+/** evaluates first central derivative w.r.t. y for u at location of cell centre */
+inline FLOAT dudym ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+    //interpolate u velocitys at i-1, in j direction
+    const FLOAT u_i1_j1=lv[mapd(-1,-1,0,0)]+(lv[mapd(-1,0,0,0)]-lv[mapd(-1,-1,0,0)])/(lm[mapd(-1,-1,0,1)]+lm[mapd(-1,0,0,1)])*lm[mapd(-1,-1,0,1)];
+    const FLOAT u_i1_j0=lv[mapd(-1,0,0,0)]+(lv[mapd(-1,1,0,0)]-lv[mapd(-1,0,0,0)])/(lm[mapd(-1,0,0,1)]+lm[mapd(-1,1,0,1)])*lm[mapd(-1,0,0,1)];
+    //interpolate u_velocitys at i=0
+    const FLOAT u_i0_j1=lv[mapd(0,-1,0,0)]+(lv[mapd(0,0,0,0)]-lv[mapd(0,-1,0,0)])/(lm[mapd(0,-1,0,1)]+lm[mapd(0,0,0,1)])*lm[mapd(0,-1,0,1)];
+    const FLOAT u_i0_j0=lv[mapd(0,0,0,0)]+(lv[mapd(0,1,0,0)]-lv[mapd(0,0,0,0)])/(lm[mapd(0,0,0,1)]+lm[mapd(0,1,0,1)])*lm[mapd(0,0,0,1)];
+
+    //calculate mean between i-1 and i=0
+    const FLOAT uj1=(u_i1_j1+u_i0_j1)/2;
+    const FLOAT uj0=(u_i1_j0+u_i0_j0)/2;
+
+    const FLOAT hy = lm[mapd(0,0,0,1)];       // cell size at ijk in y Direction
+
+
+    const FLOAT firstOrder  = (uj0-uj1)/hy;
+
+    return firstOrder;
+}
+
+/** evaluates first central derivative w.r.t. z for u at location of cell centre */
+inline FLOAT dudzm ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+    //interpolate u velocitys at i-1, in k direction
+    const FLOAT u_i1_j1=lv[mapd(-1,0,-1,0)]+(lv[mapd(-1,0,0,0)]-lv[mapd(-1,0,-1,0)])/(lm[mapd(-1,0,-1,2)]+lm[mapd(-1,0,0,2)])*lm[mapd(-1,0,-1,2)];
+    const FLOAT u_i1_j0=lv[mapd(-1,0,0,0)]+(lv[mapd(-1,0,1,0)]-lv[mapd(-1,0,0,0)])/(lm[mapd(-1,0,0,2)]+lm[mapd(-1,0,1,2)])*lm[mapd(-1,0,0,2)];
+    //interpolate u_velocitys at i=0
+    const FLOAT u_i0_j1=lv[mapd(0,0,-1,0)]+(lv[mapd(0,0,0,0)]-lv[mapd(0,0,-1,0)])/(lm[mapd(0,0,-1,2)]+lm[mapd(0,0,0,2)])*lm[mapd(0,0,-1,2)];
+    const FLOAT u_i0_j0=lv[mapd(0,0,0,0)]+(lv[mapd(0,0,1,0)]-lv[mapd(0,0,0,0)])/(lm[mapd(0,0,0,2)]+lm[mapd(0,0,1,2)])*lm[mapd(0,0,0,2)];
+
+    //calculate mean between i-1 and i=0
+    const FLOAT uj1=(u_i1_j1+u_i0_j1)/2;
+    const FLOAT uj0=(u_i1_j0+u_i0_j0)/2;
+
+    const FLOAT hz = lm[mapd(0,0,0,2)];       // cell size at ijk in z Direction
+
+
+    const FLOAT firstOrder  = (uj0-uj1)/hz;
+
+    return firstOrder;
+}
+
+
+/** evaluates first central derivative w.r.t. x for v at location of cell centre */
+inline FLOAT dvdxm ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+
+    const FLOAT u_lo=lv[mapd(-1,0,0,1)]+(lv[mapd(0,0,0,1)]-lv[mapd(-1,0,0,1)])/(lm[mapd(-1,0,0,0)]+lm[mapd(0,0,0,0)])*lm[mapd(-1,0,0,0)];
+    const FLOAT u_ro=lv[mapd(0,0,0,1)]+(lv[mapd(1,0,0,1)]-lv[mapd(0,0,0,1)])/(lm[mapd(0,0,0,0)]+lm[mapd(1,0,0,0)])*lm[mapd(0,0,0,0)];
+    const FLOAT u_lu=lv[mapd(-1,-1,0,1)]+(lv[mapd(0,-1,0,1)]-lv[mapd(-1,-1,0,1)])/(lm[mapd(-1,-1,0,0)]+lm[mapd(0,-1,0,0)])*lm[mapd(-1,-1,0,0)];
+    const FLOAT u_ru=lv[mapd(0,-1,0,1)]+(lv[mapd(1,-1,0,1)]-lv[mapd(0,-1,0,1)])/(lm[mapd(0,-1,0,0)]+lm[mapd(1,-1,0,0)])*lm[mapd(0,-1,0,0)];
+
+    //calculate mean
+    const FLOAT u_ml=(u_lo+u_lu)/2;
+    const FLOAT u_mr=(u_ro+u_ru)/2;
+
+    const FLOAT hx = lm[mapd(0,0,0,0)];
+
+
+    const FLOAT firstOrder  = (u_mr-u_ml)/hx;
+
+    return firstOrder;
+}
+
+/** evaluates first central derivative w.r.t. z for v at location of cell centre */
+inline FLOAT dvdzm ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+
+    const FLOAT u_lo=lv[mapd(0,0,-1,1)]+(lv[mapd(0,0,0,1)]-lv[mapd(0,0,-1,1)])/(lm[mapd(0,0,-1,2)]+lm[mapd(0,0,0,2)])*lm[mapd(0,0,-1,2)];
+    const FLOAT u_ro=lv[mapd(0,0,0,1)]+(lv[mapd(0,0,1,1)]-lv[mapd(0,0,0,1)])/(lm[mapd(0,0,0,2)]+lm[mapd(0,0,1,2)])*lm[mapd(0,0,0,2)];
+    const FLOAT u_lu=lv[mapd(0,-1,-1,1)]+(lv[mapd(0,-1,0,1)]-lv[mapd(0,-1,-1,1)])/(lm[mapd(0,-1,-1,2)]+lm[mapd(0,-1,0,2)])*lm[mapd(0,-1,-1,2)];
+    const FLOAT u_ru=lv[mapd(0,-1,0,1)]+(lv[mapd(0,-1,1,1)]-lv[mapd(0,-1,0,1)])/(lm[mapd(0,-1,0,2)]+lm[mapd(0,-1,1,2)])*lm[mapd(0,-1,0,2)];
+
+    //calculate mean
+    const FLOAT u_ml=(u_lo+u_lu)/2;
+    const FLOAT u_mr=(u_ro+u_ru)/2;
+
+    const FLOAT hz = lm[mapd(0,0,0,2)];
+
+
+    const FLOAT firstOrder  = (u_mr-u_ml)/hz;
+
+    return firstOrder;
+}
+
+/** evaluates first central derivative w.r.t. x for w at location of cell centre */
+inline FLOAT dwdxm ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+
+    const FLOAT u_lo=lv[mapd(-1,0,0,2)]+(lv[mapd(0,0,0,2)]-lv[mapd(-1,0,0,2)])/(lm[mapd(-1,0,0,0)]+lm[mapd(0,0,0,0)])*lm[mapd(-1,0,0,0)];
+    const FLOAT u_ro=lv[mapd(0,0,0,2)]+(lv[mapd(1,0,0,2)]-lv[mapd(0,0,0,2)])/(lm[mapd(0,0,0,0)]+lm[mapd(1,0,0,0)])*lm[mapd(0,0,0,0)];
+    const FLOAT u_lu=lv[mapd(-1,0,-1,2)]+(lv[mapd(0,0,-1,2)]-lv[mapd(-1,0,-1,2)])/(lm[mapd(-1,0,-1,0)]+lm[mapd(0,0,-1,0)])*lm[mapd(-1,0,-1,0)];
+    const FLOAT u_ru=lv[mapd(0,0,-1,2)]+(lv[mapd(1,0,-1,2)]-lv[mapd(0,0,-1,2)])/(lm[mapd(0,0,-1,0)]+lm[mapd(1,0,-1,0)])*lm[mapd(0,0,-1,0)];
+
+    //calculate mean
+    const FLOAT u_ml=(u_lo+u_lu)/2;
+    const FLOAT u_mr=(u_ro+u_ru)/2;
+
+    const FLOAT hx = lm[mapd(0,0,0,0)];
+
+
+    const FLOAT firstOrder  = (u_mr-u_ml)/hx;
+
+    return firstOrder;
+}
+
+/** evaluates first central derivative w.r.t. y for w at location of cell centre */
+inline FLOAT dwdym ( const FLOAT * const lv, const FLOAT * const lm ) {
+
+
+    const FLOAT u_lo=lv[mapd(0,-1,0,2)]+(lv[mapd(0,0,0,2)]-lv[mapd(0,-1,0,2)])/(lm[mapd(0,-1,0,1)]+lm[mapd(0,0,0,1)])*lm[mapd(0,-1,0,1)];
+    const FLOAT u_ro=lv[mapd(0,0,0,2)]+(lv[mapd(0,1,0,2)]-lv[mapd(0,0,0,2)])/(lm[mapd(0,0,0,1)]+lm[mapd(0,1,0,1)])*lm[mapd(0,0,0,1)];
+    const FLOAT u_lu=lv[mapd(0,-1,-1,2)]+(lv[mapd(0,0,-1,2)]-lv[mapd(0,-1,-1,2)])/(lm[mapd(0,-1,-1,1)]+lm[mapd(0,0,-1,1)])*lm[mapd(0,-1,-1,1)];
+    const FLOAT u_ru=lv[mapd(0,0,-1,2)]+(lv[mapd(0,1,-1,2)]-lv[mapd(0,0,-1,2)])/(lm[mapd(0,0,-1,1)]+lm[mapd(0,1,-1,1)])*lm[mapd(0,0,-1,1)];
+
+    //calculate mean
+    const FLOAT u_ml=(u_lo+u_lu)/2;
+    const FLOAT u_mr=(u_ro+u_ru)/2;
+
+    const FLOAT hy = lm[mapd(0,0,0,1)];
+
+
+    const FLOAT firstOrder  = (u_mr-u_ml)/hy;
+
+    return firstOrder;
+}
+
+
 inline FLOAT computeF2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const Parameters & parameters, FLOAT dt){
     return localVelocity [mapd(0,0,0,0)]
         + dt * ( 1 / parameters.flow.Re * ( d2udx2 ( localVelocity, localMeshsize )
@@ -1091,9 +1221,9 @@ inline FLOAT computeSTP3D(const FLOAT * const localVelocity, const FLOAT * const
     return std::sqrt(2*(4*(dudx_b(localVelocity,localMeshsize)*dudx_b(localVelocity,localMeshsize))
                         +4*(dvdy_b(localVelocity,localMeshsize)*dvdy_b(localVelocity,localMeshsize))
                         +4*(dwdz_b(localVelocity,localMeshsize)*dwdz_b(localVelocity,localMeshsize))
-                        +2*(dvdxb(localVelocity,localMeshsize)+dudyb(localVelocity,localMeshsize))*(dvdxb(localVelocity,localMeshsize)+dudyb(localVelocity,localMeshsize))
-                        +2*(dudzb(localVelocity,localMeshsize)+dwdxb(localVelocity,localMeshsize))*(dudzb(localVelocity,localMeshsize)+dwdxb(localVelocity,localMeshsize))
-                        +2*(dvdzb(localVelocity,localMeshsize)+dwdyb(localVelocity,localMeshsize))*(dvdzb(localVelocity,localMeshsize)+dwdyb(localVelocity,localMeshsize)))
+                        +2*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))
+                        +2*(dudzm(localVelocity,localMeshsize)+dwdxm(localVelocity,localMeshsize))*(dudzm(localVelocity,localMeshsize)+dwdxm(localVelocity,localMeshsize))
+                        +2*(dvdzm(localVelocity,localMeshsize)+dwdym(localVelocity,localMeshsize))*(dvdzm(localVelocity,localMeshsize)+dwdym(localVelocity,localMeshsize)))
                      );
 }
 
@@ -1101,7 +1231,7 @@ inline FLOAT computeSTP2D(const FLOAT * const localVelocity, const FLOAT * const
 {
     return std::sqrt(2*(4*(dudx_b(localVelocity,localMeshsize)*dudx_b(localVelocity,localMeshsize))
                         +4*(dvdy_b(localVelocity,localMeshsize)*dvdy_b(localVelocity,localMeshsize))
-                        +2*(dvdxb(localVelocity,localMeshsize)+dudyb(localVelocity,localMeshsize))*(dvdxb(localVelocity,localMeshsize)+dudyb(localVelocity,localMeshsize)))
+                        +2*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize)))
                      );
 }
 
