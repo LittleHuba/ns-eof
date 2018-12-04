@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         vtkIterator->iterate();
 
         testing_ofstream outputFileStream;
-        vtkStencil->write(*flowField, 0, outputFileStream);
+        vtkStencil->write(0, outputFileStream);
 
         BOOST_CHECK_EQUAL(outputFileStream.str(), "# vtk DataFile Version 2.0\n"
                                                   "Some generic header information for whatever reason\n"
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         vtkIterator->iterate();
 
         testing_ofstream outputFileStream;
-        vtkStencil->write(*flowField, 0, outputFileStream);
+        vtkStencil->write(0, outputFileStream);
 
         BOOST_CHECK_EQUAL(outputFileStream.str(), "# vtk DataFile Version 2.0\n"
                                                   "Some generic header information for whatever reason\n"
