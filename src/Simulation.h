@@ -64,7 +64,6 @@ protected:
     
     PetscSolver _solver;
 
-
 public:
     Simulation(Parameters &parameters, FlowField &flowField) :
             _parameters(parameters),

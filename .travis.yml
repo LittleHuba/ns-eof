@@ -1,11 +1,17 @@
 language: cpp
 sudo: required
 dist: trusty
-cache: bundler
+cache:
+  bundler: true
+  directories:
+  - petsc-3.5.4
 addons:
   apt:
     packages:
     - cmake
+    - libopenmpi-dev
+    - openmpi-bin
+    - libboost-test-dev
     sources:
     - ubuntu-toolchain-r-test
 compiler:
@@ -13,8 +19,6 @@ compiler:
 os:
 - linux
 before_install:
-- test -n $CC  && unset CC
-- test -n $CXX && unset CXX
 - ./scripts/dependencies.sh
 script:
 - ./scripts/build.sh

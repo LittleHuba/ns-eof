@@ -65,7 +65,10 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     }
 
     this->_pointsStream << std::endl;
-    this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
+    if (parameters.geometry.dim == 2)
+        this->_pointsStream << "CELL_DATA " << cellsX * cellsY << std::endl;
+    else if (parameters.geometry.dim == 3)
+        this->_pointsStream << "CELL_DATA " << cellsX * cellsY * cellsZ << std::endl;
 
     // Set some parameters for the pressure and velocity streams
     this->_pressureStream.precision(6);
@@ -116,12 +119,17 @@ inline void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
     }
 }
 
-void VTKStencil::write(int timeStep) {
-    if(_parameters.parallel.rank==0) std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
-    std::string filename = "./VTK/" + _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
+
+void VTKStencil::write(FlowField &flowField, int timeStep) {
+    std::ofstream vtkFile;
+    write(flowField, timeStep, vtkFile);
+}
+
+void VTKStencil::write(FlowField &flowField, int timeStep, std::ofstream &vtkFile) {
+    std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
+    std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 
-    std::ofstream vtkFile;
     vtkFile.open(filename);
     if (vtkFile.is_open()) {
         // Write the header and points to the file
