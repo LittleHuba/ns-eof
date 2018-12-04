@@ -14,8 +14,10 @@
 #include <Iterators.h>
 #include <stencils/communicationStencils/VelocityBufferFillStencil.h>
 #include <stencils/communicationStencils/VelocityBufferReadStencil.h>
+#include <stencils/communicationStencils/ViscosityBufferFillStencil.h>
+#include <stencils/communicationStencils/ViscosityBufferReadStencil.h>
 
-typedef enum Tag {PRESSURE_COMM=0, VELOCITY_COMM=1} Tag;
+typedef enum Tag {PRESSURE_COMM=0, VELOCITY_COMM=1, VISCOSITY_COMM=2} Tag;
 
 class PetscParallelManager
 {
@@ -31,21 +33,31 @@ private:
     FLOAT **pressureRecvBuffers;
     Triple<FLOAT> **velocitySendBuffers;
     Triple<FLOAT> **velocityRecvBuffers;
+    FLOAT **viscositySendBuffers;
+    FLOAT **viscosityRecvBuffers;
 
     FLOAT *tempPressureSendBuffer;
     FLOAT *tempPressureRecvBuffer;
     Triple<FLOAT> *tempVelocitySendBuffer;
     Triple<FLOAT> *tempVelocityRecvBuffer;
+
+    FLOAT *tempViscositySendBuffer;
+    FLOAT *tempViscosityRecvBuffer;
     
     PressureBufferFillStencil pressureSendStencil;
     PressureBufferReadStencil pressureRecvStencil;
     VelocityBufferFillStencil velocitySendStencil;
     VelocityBufferReadStencil velocityRecvStencil;
+    ViscosityBufferFillStencil viscositySendStencil;
+    ViscosityBufferReadStencil viscosityRecvStencil;
 
     ParallelBoundaryIterator<FlowField> pressureSendIterator;
     ParallelBoundaryIterator<FlowField> pressureRecvIterator;
     ParallelBoundaryIterator<FlowField> velocitySendIterator;
     ParallelBoundaryIterator<FlowField> velocityRecvIterator;
+    ParallelBoundaryIterator<FlowField> viscositySendIterator;
+    ParallelBoundaryIterator<FlowField> viscosityRecvIterator;
+
 
 public:
     PetscParallelManager(const Parameters &parameters, FlowField &flowField);
@@ -53,6 +65,8 @@ public:
     void exchangePressure();
     
     void exchangeVelocity();
+
+    void exchangeViscosity();
     
     virtual ~PetscParallelManager();
 

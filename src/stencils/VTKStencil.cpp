@@ -40,25 +40,7 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
                 }
             }
         }
-    // if (parameters.geometry.dim == 2) {
-    //     for (int j = parameters.parallel.firstCorner[1] + 2; j <= parameters.parallel.firstCorner[1] + pointsY + 1; ++j) {
-    //         for (int i = parameters.parallel.firstCorner[0] + 2; i <= parameters.parallel.firstCorner[0] + pointsX + 1; ++i) {
-    //             this->_pointsStream << (parameters.meshsize->getPosX(i, j)) << " "
-    //                                 << (parameters.meshsize->getPosY(i, j)) << " "
-    //                                 << 0.0 << std::endl;
-    //         }
-    //     }
-    // } else if (parameters.geometry.dim == 3) {
-    //     for (int k = parameters.parallel.firstCorner[2] + 2; k <= parameters.parallel.firstCorner[2] + pointsZ + 1; ++k) {
-    //         for (int j = parameters.parallel.firstCorner[1] + 2; j <= parameters.parallel.firstCorner[1] + pointsY + 1; ++j) {
-    //             for (int i = parameters.parallel.firstCorner[0] + 2; i <= parameters.parallel.firstCorner[0] + pointsX + 1; ++i) {
-    //                 this->_pointsStream << (parameters.meshsize->getPosX(i, j, k)) << " "
-    //                                     << (parameters.meshsize->getPosY(i, j, k)) << " "
-    //                                     << (parameters.meshsize->getPosZ(i, j, k)) << std::endl;
-    //             }
-    //         }
-    //     }
-    // }
+
 
     if(_parameters.geometry.dim == 2){
         cellsZ = 1;
@@ -126,7 +108,7 @@ void VTKStencil::write(FlowField &flowField, int timeStep) {
 }
 
 void VTKStencil::write(FlowField &flowField, int timeStep, std::ofstream &vtkFile) {
-    std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
+    if(_parameters.parallel.rank==0)std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 

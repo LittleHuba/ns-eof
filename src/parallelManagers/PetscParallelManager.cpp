@@ -8,10 +8,13 @@ PetscParallelManager::PetscParallelManager(const Parameters &parameters, FlowFie
         : parameters(parameters), flowField(flowField),
         pressureSendStencil(parameters), pressureRecvStencil(parameters),
         velocitySendStencil(parameters), velocityRecvStencil(parameters),
+        viscositySendStencil(parameters),viscosityRecvStencil(parameters),
         pressureSendIterator(flowField, parameters, pressureSendStencil, 2, -1), //todo: here check if these iterators need any offset
         pressureRecvIterator(flowField, parameters, pressureRecvStencil, 2, -1),
         velocitySendIterator(flowField, parameters, velocitySendStencil, 1, 0),
-        velocityRecvIterator(flowField, parameters, velocityRecvStencil, 1, 0)
+        velocityRecvIterator(flowField, parameters, velocityRecvStencil, 1, 0),
+        viscositySendIterator(flowField, parameters, viscositySendStencil, 2, -1),
+        viscosityRecvIterator(flowField, parameters, viscosityRecvStencil, 2, -1)
 {
     initializeSizes(parameters, flowField);
     rank = parameters.parallel.rank;
@@ -22,6 +25,8 @@ PetscParallelManager::PetscParallelManager(const Parameters &parameters, FlowFie
     pressureRecvStencil.initializeBuffers(pressureRecvBuffers);
     velocitySendStencil.initializeBuffers(velocitySendBuffers);
     velocityRecvStencil.initializeBuffers(velocityRecvBuffers);
+    viscositySendStencil.initializeBuffers(viscositySendBuffers);
+    viscosityRecvStencil.initializeBuffers(viscosityRecvBuffers);
 }
 
 void PetscParallelManager::initializeNeighbours(const Parameters &parameters)
@@ -84,6 +89,8 @@ void PetscParallelManager::allocateBuffers()
     pressureRecvBuffers = new FLOAT *[numberDirection];
     velocitySendBuffers = new Triple<FLOAT> *[numberDirection];
     velocityRecvBuffers = new Triple<FLOAT> *[numberDirection];
+    viscositySendBuffers = new FLOAT *[numberDirection];
+    viscosityRecvBuffers = new FLOAT *[numberDirection];
     
     // int totalSize = sizes[LEFT] + sizes[RIGHT] + sizes[BOTTOM] + sizes[TOP] + sizes[FRONT] + sizes[BACK];
     // pressureSendBuffers[0] = new FLOAT[totalSize];
@@ -97,11 +104,15 @@ void PetscParallelManager::allocateBuffers()
         tempPressureSendBuffer = new FLOAT[sizes[d]];
         tempPressureRecvBuffer = new FLOAT[sizes[d]];
         tempVelocitySendBuffer = new Triple<FLOAT>[sizes[d]];
-        tempVelocityRecvBuffer = new Triple<FLOAT>[sizes[d]];   
+        tempVelocityRecvBuffer = new Triple<FLOAT>[sizes[d]];
+        tempViscositySendBuffer = new FLOAT[sizes[d]];
+        tempViscosityRecvBuffer = new FLOAT[sizes[d]];
         pressureSendBuffers[d] = tempPressureSendBuffer;
         pressureRecvBuffers[d] = tempPressureRecvBuffer;
         velocitySendBuffers[d] = tempVelocitySendBuffer;
         velocityRecvBuffers[d] = tempVelocityRecvBuffer;
+        viscositySendBuffers[d] = tempViscositySendBuffer;
+        viscosityRecvBuffers[d] = tempViscosityRecvBuffer;
     }
 }
 
@@ -117,6 +128,12 @@ void PetscParallelManager::exchangeVelocity()
     readValues(velocitySendIterator);
     communicateValues<Triple<FLOAT>>(velocitySendBuffers, velocityRecvBuffers, VELOCITY_COMM);
     writeValues(velocityRecvIterator);
+}
+
+void PetscParallelManager::exchangeViscosity() {
+    readValues(viscositySendIterator);
+    communicateValues<FLOAT>(viscositySendBuffers, viscosityRecvBuffers, VISCOSITY_COMM);
+    writeValues(viscosityRecvIterator);
 }
 
 void PetscParallelManager::readValues(ParallelBoundaryIterator<FlowField> iterator)

@@ -185,6 +185,9 @@ public:
         // TODO WS2: communicate velocity values
         // if(rank==1)printArray(1, "After boundary updates");
         _parallelManager.exchangeVelocity();
+        if(_parameters.turbulence.isTurbulenceEnabled){
+            _parallelManager.exchangeViscosity();
+        }
         // if(rank==1)printArray(1, "After velocity communication");
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
@@ -197,7 +200,7 @@ public:
         // iterate stencil over _flowField
         _vtkIterator.iterate();
         // write flow field information to vtk file
-        _vtkStencil.write(timeStep);
+        _vtkStencil.write(_flowField, timeStep);
     }
 
 protected:
