@@ -18,6 +18,7 @@ class MaxUStencil : public FieldStencil<FlowField>, public BoundaryStencil<FlowF
     private:
 
         FLOAT _maxValues[3];  //! Stores the maximum module of every component
+        FLOAT _minReynolds;
 
         /** Sets the maximum value arrays to the value of the cell if it surpasses the current one.
          *
@@ -85,6 +86,7 @@ class MaxUStencil : public FieldStencil<FlowField>, public BoundaryStencil<FlowF
          *  divided by the respective local meshsize
          */
         const FLOAT * getMaxValues() const;
+        const FLOAT  getMinReynold() const;
 };
 
 #endif

@@ -230,7 +230,7 @@ protected:
         }
         
         localMin = std::min(_parameters.timestep.dt,
-                            std::min(std::min(_parameters.flow.Re / (2 * factor),
+                            std::min(std::min(_parameters.flow.Re / (1 + _parameters.flow.Re*_maxUStencil.getMinReynold())/ (2 * factor),
                                               1.0 / _maxUStencil.getMaxValues()[0]),
                                      1.0 / _maxUStencil.getMaxValues()[1]));
         
