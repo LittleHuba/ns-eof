@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     int timeSteps = 0;
 
     // plot initial state
-//    simulation->plotVTK(timeSteps);
+    simulation->plotVTK(timeSteps);
 
     // time loop
     while (time < parameters.simulation.finalTime) {
@@ -79,23 +79,22 @@ int main(int argc, char *argv[]) {
         time += parameters.timestep.dt;
 
         // std-out: terminal info
-//        if ((rank == 0) && (timeStdOut <= time)) {
-//            std::cout << "Current time: " << time << "\ttimestep: " <<
-//                      parameters.timestep.dt << std::endl;
-//            timeStdOut += parameters.stdOut.interval;
-//        }
+        if ((rank == 0) && (timeStdOut <= time)) {
+            std::cout << "Current time: " << time << "\ttimestep: " << parameters.timestep.dt << std::endl;
+            timeStdOut += parameters.stdOut.interval;
+        }
 
         timeSteps++;
 
         // trigger VTK output
-//        if (timeVTKOut <= time) {
-//            simulation->plotVTK(timeSteps);
-//            timeVTKOut += parameters.vtk.interval;
-//       }
+        if (timeVTKOut <= time) {
+            simulation->plotVTK(timeSteps);
+            timeVTKOut += parameters.vtk.interval;
+        }
     }
 
     // plot final output
-//   simulation->plotVTK(timeSteps);
+    simulation->plotVTK(timeSteps);
 
     delete simulation;
     simulation = nullptr;
