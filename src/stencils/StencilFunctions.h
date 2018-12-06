@@ -1,7 +1,8 @@
 #ifndef _DERIVATIVES_H_
 #define _DERIVATIVES_H_
 
-#include <math.h>
+#include <cmath>
+#include <cassert>
 #include "../Definitions.h"
 #include "../Parameters.h"
 #include "../FlowField.h"
@@ -1161,7 +1162,9 @@ inline FLOAT vt_interpolate( const FLOAT * const localViscosity, const FLOAT * c
         return buffer[1]+(buffer[0]-buffer[1])/(buffer[2]+buffer[3])*buffer[3];
     }
 
-
+    // If we reach this return there is an invalid call of this method
+    assert(false);
+    return NAN;
 }
 
 inline FLOAT computeTurbulentF2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize, const FLOAT * localViscosity, const Parameters & parameters, FLOAT dt){

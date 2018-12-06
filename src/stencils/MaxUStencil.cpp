@@ -1,6 +1,6 @@
 #include "MaxUStencil.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 
 
 MaxUStencil::MaxUStencil (const Parameters & parameters) :

@@ -1,4 +1,4 @@
-#include <float.h> // To get the max double
+#include <cfloat> // To get the max double
 #include <math.h>
 #include "SORSolver.h"
 

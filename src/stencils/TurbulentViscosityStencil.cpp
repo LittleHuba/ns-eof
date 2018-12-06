@@ -31,8 +31,4 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j, int k)
 
 
     }
-
-
-
-
 }

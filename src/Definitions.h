@@ -1,7 +1,7 @@
 #ifndef _DEFINITIONS_H_
 #define _DEFINITIONS_H_
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <stdio.h>
 #include <iostream>
 #include <float.h>

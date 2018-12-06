@@ -89,6 +89,7 @@ fabric.properties
 ns
 
 # Output
+hostfile
 tryout/*
 
 # QT Creator Mlesjak

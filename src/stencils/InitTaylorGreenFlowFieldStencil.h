@@ -18,8 +18,7 @@ class InitTaylorGreenFlowFieldStencil : public FieldStencil<FlowField> {
       const FLOAT * const  _domainSize;
 
       FLOAT * initializeDomainSize(const Parameters &parameters) const {
-        FLOAT *domainSize = new FLOAT[3];
-        if (domainSize == NULL){handleError(1,"InitTaylorGreenFlowFieldStencil: domainSize==NULL");}
+        auto *domainSize = new FLOAT[3];
         domainSize[0] = parameters.geometry.lengthX;
         domainSize[1] = parameters.geometry.lengthY;
         domainSize[2] = parameters.geometry.lengthZ;
