@@ -77,6 +77,8 @@ add_library(ns-eof
 		stencils/communicationStencils/PressureBufferReadStencil.h
 		stencils/communicationStencils/VelocityBufferFillStencil.h
 		stencils/communicationStencils/VelocityBufferReadStencil.h
+		stencils/communicationStencils/WallDistanceBufferFillStencil.h
+		stencils/communicationStencils/WallDistanceBufferReadStencil.h
         Configuration.cpp
         Configuration.h
         DataStructures.cpp
@@ -97,7 +99,7 @@ add_library(ns-eof
         SimpleTimer.h
         Simulation.h
 		Stencil.h 
-		TurbulentSimulation.h stencils/communicationStencils/ViscosityBufferFillStencil.cpp stencils/communicationStencils/ViscosityBufferFillStencil.h stencils/communicationStencils/ViscosityBufferReadStencil.cpp stencils/communicationStencils/ViscosityBufferReadStencil.h)
+		TurbulentSimulation.h stencils/communicationStencils/ViscosityBufferFillStencil.cpp stencils/communicationStencils/ViscosityBufferFillStencil.h stencils/communicationStencils/ViscosityBufferReadStencil.cpp stencils/communicationStencils/ViscosityBufferReadStencil.h stencils/communicationStencils/WallDistanceBufferFillStencil.cpp stencils/communicationStencils/WallDistanceBufferFillStencil.h stencils/communicationStencils/WallDistanceBufferReadStencil.cpp stencils/communicationStencils/WallDistanceBufferReadStencil.h)
 
 target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
