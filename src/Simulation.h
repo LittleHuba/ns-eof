@@ -203,7 +203,6 @@ public:
         _vtkIterator.iterate();
         // write flow field information to vtk file
         _vtkStencil.write(timeStep);
-
     }
 
 protected:
