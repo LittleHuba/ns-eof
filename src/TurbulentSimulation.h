@@ -33,8 +33,15 @@ public:
 
         // Iterate twice (once forward once backward) to get the right distances to obstacles
         _obstacleDistanceIterator.iterate();
-        // TODO transfer wall distance
+
         _obstacleDistanceIterator.iterateBackwards();
+        _parallelManager.exchangeWallDistance();
+
+        _obstacleDistanceIterator.iterate();
+
+        _obstacleDistanceIterator.iterateBackwards();
+
+
         // TODO transfer wall distance
     }
 };

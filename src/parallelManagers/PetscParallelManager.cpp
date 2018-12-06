@@ -9,12 +9,15 @@ PetscParallelManager::PetscParallelManager(const Parameters &parameters, FlowFie
         pressureSendStencil(parameters), pressureRecvStencil(parameters),
         velocitySendStencil(parameters), velocityRecvStencil(parameters),
         viscositySendStencil(parameters),viscosityRecvStencil(parameters),
+        wallDistanceSendStencil(parameters), wallDistanceRecvStencil(parameters),
         pressureSendIterator(flowField, parameters, pressureSendStencil, 2, -1), //todo: here check if these iterators need any offset
         pressureRecvIterator(flowField, parameters, pressureRecvStencil, 2, -1),
         velocitySendIterator(flowField, parameters, velocitySendStencil, 1, 0),
         velocityRecvIterator(flowField, parameters, velocityRecvStencil, 1, 0),
         viscositySendIterator(flowField, parameters, viscositySendStencil, 2, -1),
-        viscosityRecvIterator(flowField, parameters, viscosityRecvStencil, 2, -1)
+        viscosityRecvIterator(flowField, parameters, viscosityRecvStencil, 2, -1),
+        wallDistanceSendIterator(flowField, parameters, wallDistanceSendStencil, 2, -1),
+        wallDistanceRecvIterator(flowField, parameters, wallDistanceRecvStencil, 2, -1)
 {
     initializeSizes(parameters, flowField);
     rank = parameters.parallel.rank;
@@ -27,6 +30,8 @@ PetscParallelManager::PetscParallelManager(const Parameters &parameters, FlowFie
     velocityRecvStencil.initializeBuffers(velocityRecvBuffers);
     viscositySendStencil.initializeBuffers(viscositySendBuffers);
     viscosityRecvStencil.initializeBuffers(viscosityRecvBuffers);
+    wallDistanceSendStencil.initializeBuffers(wallDistanceSendBuffers);
+    wallDistanceRecvStencil.initializeBuffers(wallDistanceRecvBuffers);
 }
 
 void PetscParallelManager::initializeNeighbours(const Parameters &parameters)
@@ -46,11 +51,19 @@ PetscParallelManager::~PetscParallelManager()
         delete[] pressureRecvBuffers[d];
         delete[] velocitySendBuffers[d];
         delete[] velocityRecvBuffers[d];
+        delete[] viscositySendBuffers[d];
+        delete[] viscosityRecvBuffers[d];
+        delete[] wallDistanceSendBuffers[d];
+        delete[] wallDistanceRecvBuffers[d];
     }
     delete[] pressureSendBuffers;
     delete[] pressureRecvBuffers;
     delete[] velocitySendBuffers;
     delete[] velocityRecvBuffers;
+    delete[] viscositySendBuffers;
+    delete[] viscosityRecvBuffers;
+    delete[] wallDistanceSendBuffers;
+    delete[] wallDistanceRecvBuffers;
 }
 
 void PetscParallelManager::initializeSizes(const Parameters &parameters, const FlowField &flowField)
@@ -91,6 +104,8 @@ void PetscParallelManager::allocateBuffers()
     velocityRecvBuffers = new Triple<FLOAT> *[numberDirection];
     viscositySendBuffers = new FLOAT *[numberDirection];
     viscosityRecvBuffers = new FLOAT *[numberDirection];
+    wallDistanceSendBuffers = new FLOAT *[numberDirection];
+    wallDistanceRecvBuffers = new FLOAT *[numberDirection];
     
     // int totalSize = sizes[LEFT] + sizes[RIGHT] + sizes[BOTTOM] + sizes[TOP] + sizes[FRONT] + sizes[BACK];
     // pressureSendBuffers[0] = new FLOAT[totalSize];
@@ -107,12 +122,17 @@ void PetscParallelManager::allocateBuffers()
         tempVelocityRecvBuffer = new Triple<FLOAT>[sizes[d]];
         tempViscositySendBuffer = new FLOAT[sizes[d]];
         tempViscosityRecvBuffer = new FLOAT[sizes[d]];
+        tempWallDistanceViscositySendBuffer = new FLOAT[sizes[d]];
+        tempWallDistanceViscosityRecvBuffer = new FLOAT[sizes[d]];
+
         pressureSendBuffers[d] = tempPressureSendBuffer;
         pressureRecvBuffers[d] = tempPressureRecvBuffer;
         velocitySendBuffers[d] = tempVelocitySendBuffer;
         velocityRecvBuffers[d] = tempVelocityRecvBuffer;
         viscositySendBuffers[d] = tempViscositySendBuffer;
         viscosityRecvBuffers[d] = tempViscosityRecvBuffer;
+        wallDistanceSendBuffers[d] = tempWallDistanceViscositySendBuffer;
+        wallDistanceRecvBuffers[d] = tempWallDistanceViscosityRecvBuffer;
     }
 }
 
@@ -134,6 +154,12 @@ void PetscParallelManager::exchangeViscosity() {
     readValues(viscositySendIterator);
     communicateValues<FLOAT>(viscositySendBuffers, viscosityRecvBuffers, VISCOSITY_COMM);
     writeValues(viscosityRecvIterator);
+}
+
+void PetscParallelManager::exchangeWallDistance() {
+    readValues(wallDistanceSendIterator);
+    communicateValues<FLOAT>(wallDistanceSendBuffers, wallDistanceRecvBuffers, WALLDISTANCE_COMM);
+    writeValues(wallDistanceRecvIterator);
 }
 
 void PetscParallelManager::readValues(ParallelBoundaryIterator<FlowField> iterator)

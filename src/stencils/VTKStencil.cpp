@@ -109,7 +109,6 @@ void VTKStencil::write(FlowField &flowField, int timeStep) {
 
 void VTKStencil::write(FlowField &flowField, int timeStep, std::basic_ofstream<char> *vtkFile) {
     std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
->>>>>>> origin/turbulence
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 
