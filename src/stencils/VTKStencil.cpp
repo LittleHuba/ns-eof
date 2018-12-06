@@ -99,18 +99,17 @@ inline void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
     }
 }
 
-void VTKStencil::write(FlowField &flowField, int timeStep) {
+void VTKStencil::write(int timeStep) {
     std::ofstream vtkFile;
-    write(flowField, timeStep, &vtkFile);
+    write(timeStep, vtkFile);
 }
 
-void VTKStencil::write(FlowField &flowField, int timeStep, std::basic_ofstream<char> *vtkFile) {
+void VTKStencil::write(int timeStep, std::ofstream &vtkFile) {
     if(_parameters.parallel.rank==0) std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
-    std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
-                           + "_" + std::to_string(timeStep) + ".vtk";
+    std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank) + "_" + std::to_string(timeStep) + ".vtk";
 
-    vtkFile->open(filename);
-    if (vtkFile->is_open()) {
+    vtkFile.open(filename);
+    if (vtkFile.is_open()) {
         // Write the header and points to the file
         *vtkFile << this->_pointsStream.str();
 

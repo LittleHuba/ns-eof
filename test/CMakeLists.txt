@@ -9,12 +9,12 @@ include_directories(stencils)
 
 add_executable (boost_test
         TestSuite.cpp
+        stencils/communicationStencils/Direction.test.cpp
         stencils/VTKStencilTests.cpp
         stencils/TurbulenceVTKStencilTests.cpp
         stencils/WallDistanceStencilsTests.cpp
         TestingFunctions.h
-        stencils/StencilFunctionsTests.cpp
-        )
+        stencils/StencilFunctionsTests.cpp)
 
 target_link_libraries (boost_test
         ${PETSC_LIBRARIES}
