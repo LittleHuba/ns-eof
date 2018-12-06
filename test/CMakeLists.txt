@@ -5,7 +5,6 @@ include_directories (${TEST_SOURCE_DIR}/src
 
 add_definitions (-DBOOST_TEST_DYN_LINK)
 
-
 include_directories(stencils)
 
 add_executable (boost_test
@@ -14,7 +13,8 @@ add_executable (boost_test
         stencils/TurbulenceVTKStencilTests.cpp
         stencils/WallDistanceStencilsTests.cpp
         TestingFunctions.h
-        stencils/StencilFunctionsTests.cpp)
+        stencils/StencilFunctionsTests.cpp
+        FGH_Test.cpp)
 
 target_link_libraries (boost_test
         ${PETSC_LIBRARIES}
