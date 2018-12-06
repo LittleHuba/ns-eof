@@ -85,7 +85,7 @@ public:
         // iterate stencil over _flowField
         _turbulenceVTKIterator.iterate();
         // write flow field information to vtk file
-        _turbulenceVTKStencil.write(_flowField, timeStep);
+        _turbulenceVTKStencil.write(timeStep);
     }
 };
 

@@ -29,12 +29,12 @@ inline void TurbulenceVTKStencil::apply(FlowField &flowField, int i, int j, int 
     }
 }
 
-void TurbulenceVTKStencil::write(FlowField &flowField, int timeStep) {
+void TurbulenceVTKStencil::write(int timeStep) {
     std::ofstream vtkFile;
-    write(flowField, timeStep, &vtkFile);
+    write(timeStep, &vtkFile);
 }
 
-void TurbulenceVTKStencil::write(FlowField &flowField, int timeStep, std::basic_ofstream<char> *vtkFile) {
+void TurbulenceVTKStencil::write(int timeStep, std::basic_ofstream<char> *vtkFile) {
     if(_parameters.parallel.rank==0) std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";

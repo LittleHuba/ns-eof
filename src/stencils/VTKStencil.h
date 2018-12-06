@@ -48,13 +48,13 @@ public:
     /** Writes the information to the file
      * @param timeStep The timestep to write
      */
-    void write(int timeStep);
+    virtual void write(int timeStep);
 
     /** Writes the information to the file
      * @param timeStep The timestep to write
      * @param vtkFile Used for testing (to redirect output to internal testing stream)
      */
-    void write(int timeStep, std::ofstream &vtkFile);
+    virtual void write(int timeStep, std::basic_ofstream<char> *vtkFile);
 
 };
 
