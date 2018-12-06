@@ -13,7 +13,8 @@ add_executable (boost_test
         stencils/TurbulenceVTKStencilTests.cpp
         TestingFunctions.h
         vt_interpolate_Test.cpp
-        ComputeSTP2D_Test.cpp)
+        ComputeSTP2D_Test.cpp
+        FGH_Test.cpp)
 
 target_link_libraries (boost_test
         ${PETSC_LIBRARIES}
