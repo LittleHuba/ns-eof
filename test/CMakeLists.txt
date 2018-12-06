@@ -12,7 +12,10 @@ add_executable (boost_test
         DummyTestSuite.cpp
         stencils/VTKStencilTests.cpp
         stencils/TurbulenceVTKStencilTests.cpp
-        TestingFunctions.h)
+        stencils/WallDistanceStencilsTests.cpp
+        TestingFunctions.h
+        vt_interpolate_Test.cpp
+        ComputeSTP2D_Test.cpp)
 
 target_link_libraries (boost_test
         ${PETSC_LIBRARIES}

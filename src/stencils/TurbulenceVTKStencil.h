@@ -52,7 +52,7 @@ public:
      * @param timeStep The timestep to write
      * @param vtkFile Used for testing (to redirect output to internal testing stream)
      */
-    void write(FlowField &flowField, int timeStep, std::ofstream &vtkFile) override;
+    void write(FlowField &flowField, int timeStep, std::basic_ofstream<char> *vtkFile) override;
 };
 
 #endif

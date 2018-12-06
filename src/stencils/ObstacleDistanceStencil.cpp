@@ -1,27 +1,6 @@
 #include "ObstacleDistanceStencil.h"
 
-ObstacleDistanceStencil::ObstacleDistanceStencil(const Parameters &parameters, FlowField &flowField) : FieldStencil(
-        parameters) {
-    int cellsX = parameters.parallel.localSize[0];
-    int cellsY = parameters.parallel.localSize[1];
-    int cellsZ = parameters.parallel.localSize[2];
-
-    // Reinitialize the wall distance to the maximum value to simplify first iteration
-    if (parameters.geometry.dim == 2) {
-        for (int j = 2; j < cellsY; ++j) {
-            for (int i = 2; i < cellsX; ++i) {
-                flowField.getNearestWallDistance().getScalar(i, j) = MY_FLOAT_MAX;
-            }
-        }
-    } else if (parameters.geometry.dim == 3) {
-        for (int k = 2; k < cellsZ; ++k) {
-            for (int j = 2; j < cellsY; ++j) {
-                for (int i = 2; i < cellsX; ++i) {
-                    flowField.getNearestWallDistance().getScalar(i, j, k) = MY_FLOAT_MAX;
-                }
-            }
-        }
-    }
+ObstacleDistanceStencil::ObstacleDistanceStencil(const Parameters &parameters) : FieldStencil(parameters) {
 }
 
 inline void ObstacleDistanceStencil::apply(FlowField &flowField, int i, int j) {

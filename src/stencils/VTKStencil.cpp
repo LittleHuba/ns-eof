@@ -13,7 +13,7 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     int pointsX = cellsX + 1;
     int pointsY = cellsY + 1;
     int pointsZ = cellsZ + 1;
-    
+
     // Write the header of the file
     this->_pointsStream.precision(6);
     this->_pointsStream << std::fixed;
@@ -28,7 +28,6 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     this->_pointsStream << "POINTS " << pointsX * pointsY * pointsZ << " float" << std::endl;
 
     // Write the points of the grid
-    int count = 0;
     for (int k = 2; k < cellsZ + 3; k++) {
             for (int j = 2; j < cellsY + 3; j++) {
                 for (int i = 2; i < cellsX + 3; i++) {
@@ -36,7 +35,6 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
                     this->_pointsStream << (_parameters.meshsize->getPosX(i, j, k)) << " "
                             << (_parameters.meshsize->getPosY(i, j, k)) << " "
                             << (_parameters.meshsize->getPosZ(i, j, k)) << std::endl;
-                            count++;
                 }
             }
         }
@@ -101,34 +99,33 @@ inline void VTKStencil::apply(FlowField &flowField, int i, int j, int k) {
     }
 }
 
-
 void VTKStencil::write(FlowField &flowField, int timeStep) {
     std::ofstream vtkFile;
-    write(flowField, timeStep, vtkFile);
+    write(flowField, timeStep, &vtkFile);
 }
 
-void VTKStencil::write(FlowField &flowField, int timeStep, std::ofstream &vtkFile) {
-    if(_parameters.parallel.rank==0)std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
+void VTKStencil::write(FlowField &flowField, int timeStep, std::basic_ofstream<char> *vtkFile) {
+    if(_parameters.parallel.rank==0) std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 
-    vtkFile.open(filename);
-    if (vtkFile.is_open()) {
+    vtkFile->open(filename);
+    if (vtkFile->is_open()) {
         // Write the header and points to the file
-        vtkFile << this->_pointsStream.str();
+        *vtkFile << this->_pointsStream.str();
 
         // Write the pressure data to the file
-        vtkFile << "SCALARS pressure float 1" << std::endl;
-        vtkFile << "LOOKUP_TABLE default" << std::endl;
-        vtkFile << this->_pressureStream.rdbuf();
+        *vtkFile << "SCALARS pressure float 1" << std::endl;
+        *vtkFile << "LOOKUP_TABLE default" << std::endl;
+        *vtkFile << this->_pressureStream.rdbuf();
 
         // Write the velocity data to the file
-        vtkFile << std::endl;
-        vtkFile << "VECTORS velocity float" << std::endl;
-        vtkFile << this->_velocityStream.rdbuf();
-        vtkFile << std::endl << std::endl;
+        *vtkFile << std::endl;
+        *vtkFile << "VECTORS velocity float" << std::endl;
+        *vtkFile << this->_velocityStream.rdbuf();
+        *vtkFile << std::endl << std::endl;
 
-        vtkFile.close();
+        vtkFile->close();
     } else std::cerr << "Unable to open vtk output file for timestep " << timeStep << std::endl;
 
     // Empty the data streams for the next timestep

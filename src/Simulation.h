@@ -27,6 +27,8 @@
 #include "solvers/SORSolver.h"
 #include "solvers/PetscSolver.h"
 
+#include "stencils/TurbulentViscosityStencil.h"
+#include "stencils/TurbulenceFGHStencil.h"
 
 class Simulation
 {

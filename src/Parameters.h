@@ -135,7 +135,7 @@ class BFStepParameters{
 class TurbulenceParameters{
 public:
     // Whether the turbulence model is enabled
-        bool isTurbulenceEnabled;
+        int isTurbulenceEnabled;
     // Boundary layer thickness
         FLOAT delta;
     // Fitting parameter for Prandtls' mixing length model

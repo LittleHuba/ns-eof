@@ -97,3 +97,4 @@ ns-eof.creator
 ns-eof.files
 ns-eof.includes
 ns-eof.creator.user
+*.autosave
