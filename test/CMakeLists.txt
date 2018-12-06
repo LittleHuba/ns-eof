@@ -14,7 +14,7 @@ add_executable (boost_test
         stencils/WallDistanceStencilsTests.cpp
         TestingFunctions.h
         stencils/StencilFunctionsTests.cpp
-        FGH_Test.cpp)
+        )
 
 target_link_libraries (boost_test
         ${PETSC_LIBRARIES}
