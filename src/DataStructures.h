@@ -293,6 +293,8 @@ struct Triple
         x = other.x;
         y = other.y;
         z = other.z;
+
+        return *this;
     }
     
     Triple<DataType> &operator=(const DataType other[3])
@@ -300,6 +302,8 @@ struct Triple
         x = other[0];
         y = other[1];
         z = other[2];
+
+        return *this;
     }
     
     Triple<DataType> &operator=(const DataType other) // To allow --> triple = 0
@@ -307,6 +311,8 @@ struct Triple
         x = other;
         y = other;
         z = other;
+
+        return *this;
     }
     
     bool operator==(const Triple<DataType> &other) // To allow --> triple == 0

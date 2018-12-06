@@ -1,32 +1,36 @@
 #include <boost/test/unit_test.hpp>
-#include "../../src/stencils/VTKStencil.h"
 #include "../../src/Iterators.h"
+#include "../../src/stencils/TurbulenceVTKStencil.h"
 #include "../TestingFunctions.h"
 
-class TestingVTKStencil : public VTKStencil {
+class TestingTurbulenceVTKStencil : public TurbulenceVTKStencil {
 
 public:
-    explicit TestingVTKStencil(const Parameters &parameters) : VTKStencil(parameters) {
+    explicit TestingTurbulenceVTKStencil(const Parameters &parameters) : TurbulenceVTKStencil(parameters) {
     }
 
     std::string getPointsStream() {
-        return VTKStencil::_pointsStream.str();
+        return TurbulenceVTKStencil::_pointsStream.str();
     }
 
     std::string getVelocityStream() {
-        return VTKStencil::_velocityStream.str();
+        return TurbulenceVTKStencil::_velocityStream.str();
+    }
+
+    std::string getViscosityStream() {
+        return TurbulenceVTKStencil::_viscosityStream.str();
     }
 
     std::string getPressureStream() {
-        return VTKStencil::_pressureStream.str();
+        return TurbulenceVTKStencil::_pressureStream.str();
     }
 };
 
-BOOST_AUTO_TEST_SUITE(VTKStencilTests)
+BOOST_AUTO_TEST_SUITE(TurbulenceVTKStencilTests)
 
     BOOST_AUTO_TEST_CASE(construct2D) {
         auto parameters = new DummyParameters(2);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
 
         BOOST_CHECK_EQUAL(vtkStencil->getPointsStream(), "# vtk DataFile Version 2.0\n"
@@ -55,7 +59,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
 
     BOOST_AUTO_TEST_CASE(construct3D) {
         auto parameters = new DummyParameters(3);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
 
         BOOST_CHECK_EQUAL(vtkStencil->getPointsStream(), "# vtk DataFile Version 2.0\n"
@@ -102,7 +106,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
 
     BOOST_AUTO_TEST_CASE(apply2DCheckPressure) {
         auto parameters = new DummyParameters(2);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
 
@@ -127,7 +131,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
 
     BOOST_AUTO_TEST_CASE(apply2DCheckVelocity) {
         auto parameters = new DummyParameters(2);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
 
@@ -152,9 +156,34 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         delete parameters;
     }
 
+    BOOST_AUTO_TEST_CASE(apply2DCheckViscosity) {
+        auto parameters = new DummyParameters(2);
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
+        auto flowField = new FlowField(2, 2);
+        auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
+
+        for (int j = parameters->get().parallel.firstCorner[1] + 2; j < parameters->get().parallel.localSize[1] + 2; j++) {
+            for (int i = parameters->get().parallel.firstCorner[0] + 2; i < parameters->get().parallel.localSize[0] + 2; i++) {
+                flowField->getTurbulentViscosity().getScalar(i, j) = i * j;
+            }
+        }
+
+        vtkIterator->iterate();
+
+        BOOST_CHECK_EQUAL(vtkStencil->getViscosityStream(), "4.000000\n"
+                                                            "6.000000\n"
+                                                            "6.000000\n"
+                                                            "9.000000\n");
+
+        delete vtkIterator;
+        delete flowField;
+        delete vtkStencil;
+        delete parameters;
+    }
+
     BOOST_AUTO_TEST_CASE(apply3DCheckPressure) {
         auto parameters = new DummyParameters(3);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
 
@@ -185,7 +214,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
 
     BOOST_AUTO_TEST_CASE(apply3DCheckVelocity) {
         auto parameters = new DummyParameters(3);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
 
@@ -216,9 +245,40 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
         delete parameters;
     }
 
+    BOOST_AUTO_TEST_CASE(apply3DCheckViscosity) {
+        auto parameters = new DummyParameters(3);
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
+        auto flowField = new FlowField(2, 2, 2);
+        auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
+
+        for (int k = parameters->get().parallel.firstCorner[2] + 2; k < parameters->get().parallel.localSize[2] + 2; k++) {
+            for (int j = parameters->get().parallel.firstCorner[1] + 2; j < parameters->get().parallel.localSize[1] + 2; j++) {
+                for (int i = parameters->get().parallel.firstCorner[0] + 2; i < parameters->get().parallel.localSize[0] + 2; i++) {
+                    flowField->getTurbulentViscosity().getScalar(i, j, k) = i * j * k;
+                }
+            }
+        }
+
+        vtkIterator->iterate();
+
+        BOOST_CHECK_EQUAL(vtkStencil->getViscosityStream(), "8.000000\n"
+                                                            "12.000000\n"
+                                                            "12.000000\n"
+                                                            "18.000000\n"
+                                                            "12.000000\n"
+                                                            "18.000000\n"
+                                                            "18.000000\n"
+                                                            "27.000000\n");
+
+        delete vtkIterator;
+        delete flowField;
+        delete vtkStencil;
+        delete parameters;
+    }
+
     BOOST_AUTO_TEST_CASE(write2D) {
         auto parameters = new DummyParameters(2);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
 
@@ -227,7 +287,8 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
                 flowField->getPressure().getScalar(i, j) = i * j;
                 flowField->getVelocity().getVector(i, j)[0] = i;
                 flowField->getVelocity().getVector(i, j)[1] = j;
-                flowField->getVelocity().getVector(i, j)[2] = i*j;
+                flowField->getVelocity().getVector(i, j)[2] = i * j;
+                flowField->getTurbulentViscosity().getScalar(i, j) = 2 * i * j;
             }
         }
 
@@ -267,6 +328,13 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
                                                   "1.000000e+00 2.500000e+00 0.000000e+00\n"
                                                   "2.500000e+00 2.500000e+00 0.000000e+00\n"
                                                   "\n"
+                                                  "SCALARS viscosity float 1\n"
+                                                  "LOOKUP_TABLE default\n"
+                                                  "8.000000\n"
+                                                  "12.000000\n"
+                                                  "12.000000\n"
+                                                  "18.000000\n"
+                                                  "\n"
                                                   "\n");
 
         delete vtkIterator;
@@ -277,7 +345,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
 
     BOOST_AUTO_TEST_CASE(write3D) {
         auto parameters = new DummyParameters(3);
-        auto vtkStencil = new TestingVTKStencil(parameters->get());
+        auto vtkStencil = new TestingTurbulenceVTKStencil(parameters->get());
         auto flowField = new FlowField(2, 2, 2);
         auto vtkIterator = new FieldIterator<FlowField>(*flowField, parameters->get(), *vtkStencil, 1);
 
@@ -288,6 +356,7 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
                     flowField->getVelocity().getVector(i, j, k)[0] = i;
                     flowField->getVelocity().getVector(i, j, k)[1] = j;
                     flowField->getVelocity().getVector(i, j, k)[2] = k;
+                    flowField->getTurbulentViscosity().getScalar(i, j, k) = 2 * i * j * k;
                 }
             }
         }
@@ -353,6 +422,17 @@ BOOST_AUTO_TEST_SUITE(VTKStencilTests)
                                                   "2.500000e+00 1.000000e+00 2.500000e+00\n"
                                                   "1.000000e+00 2.500000e+00 2.500000e+00\n"
                                                   "2.500000e+00 2.500000e+00 2.500000e+00\n"
+                                                  "\n"
+                                                  "SCALARS viscosity float 1\n"
+                                                  "LOOKUP_TABLE default\n"
+                                                  "16.000000\n"
+                                                  "24.000000\n"
+                                                  "24.000000\n"
+                                                  "36.000000\n"
+                                                  "24.000000\n"
+                                                  "36.000000\n"
+                                                  "36.000000\n"
+                                                  "54.000000\n"
                                                   "\n"
                                                   "\n");
 

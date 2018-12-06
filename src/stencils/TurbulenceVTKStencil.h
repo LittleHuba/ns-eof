@@ -1,9 +1,9 @@
-#ifndef _VTK_STENCIL_H_
-#define _VTK_STENCIL_H_
+#ifndef _TVTK_STENCIL_H_
+#define _TVTK_STENCIL_H_
 
 #include "../Definitions.h"
 #include "../Parameters.h"
-#include "../Stencil.h"
+#include "VTKStencil.h"
 #include "../FlowField.h"
 #include <string>
 #include <fstream>
@@ -13,11 +13,9 @@
  *
  * When iterated with, creates a VTK file.
  */
-class VTKStencil : public FieldStencil<FlowField> {
+class TurbulenceVTKStencil : public VTKStencil {
 protected:
-    std::stringstream _pointsStream;
-    std::stringstream _pressureStream;
-    std::stringstream _velocityStream;
+    std::stringstream _viscosityStream;
 
 public:
 
@@ -25,7 +23,7 @@ public:
      *
      * @param prefix String with the prefix of the name of the VTK files
      */
-    explicit VTKStencil(const Parameters &parameters);
+    explicit TurbulenceVTKStencil(const Parameters &parameters);
 
     /** 2D operation for one position
      *
@@ -33,7 +31,6 @@ public:
      * @param i Position in the x direction
      * @param j Position in the y direction
      */
-
     void apply(FlowField &flowField, int i, int j) override;
 
     /** 3D operation for one position
@@ -48,14 +45,14 @@ public:
     /** Writes the information to the file
      * @param timeStep The timestep to write
      */
-    virtual void write(int timeStep);
+    void write(int timeStep) override;
 
     /** Writes the information to the file
+     * @param flowField Flow field to be written
      * @param timeStep The timestep to write
      * @param vtkFile Used for testing (to redirect output to internal testing stream)
      */
-    virtual void write(int timeStep, std::basic_ofstream<char> &vtkFile);
-
+    void write(int timeStep, std::basic_ofstream<char> &vtkFile) override;
 };
 
 #endif

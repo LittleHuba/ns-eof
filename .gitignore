@@ -89,6 +89,7 @@ fabric.properties
 ns
 
 # Output
+hostfile
 tryout/*
 
 # QT Creator Mlesjak
@@ -97,3 +98,4 @@ ns-eof.creator
 ns-eof.files
 ns-eof.includes
 ns-eof.creator.user
+*.autosave

@@ -27,6 +27,8 @@
 #include "solvers/SORSolver.h"
 #include "solvers/PetscSolver.h"
 
+#include "stencils/TurbulentViscosityStencil.h"
+#include "stencils/TurbulenceFGHStencil.h"
 
 class Simulation
 {
@@ -64,7 +66,6 @@ protected:
     
     PetscSolver _solver;
 
-
 public:
     Simulation(Parameters &parameters, FlowField &flowField) :
             _parameters(parameters),
@@ -90,8 +91,7 @@ public:
     {
     }
     
-    virtual ~Simulation()
-    {}
+    virtual ~Simulation() = default;
     
     /** initialises the flow field according to the scenario */
     virtual void initializeFlowField()
@@ -145,7 +145,7 @@ public:
         _solver.reInitMatrix();
     }
     
-    void printArray(int rank, std::string location){
+    void printArray(int rank, const std::string &location){
         std::cout << location << std::endl;
         for(int j=_parameters.parallel.localSize[1]+2; j >= 0; j--){
             for(int i=0; i <= _parameters.parallel.localSize[0]+2; i++){
@@ -174,7 +174,7 @@ public:
         // solve for pressure 
         _solver.solve();
         // if(rank==1)printArray(1, "After Pressure solve");
-        // TODO WS2: communicate pressure values
+        // communicate pressure values
         _parallelManager.exchangePressure();
         // if(rank==1)printArray(1, "After Pressure exchange");
         
@@ -183,13 +183,13 @@ public:
         // set obstacle boundaries
         // if(rank==1)printArray(1, "After Velocity solve");
         _obstacleIterator.iterate();
-        // TODO WS2: communicate velocity values
+        // communicate velocity values
         // if(rank==1)printArray(1, "After boundary updates");
         _parallelManager.exchangeVelocity();
+
         // if(rank==1)printArray(1, "After velocity communication");
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
-        
     }
     
     /** plots the flow field. */

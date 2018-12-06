@@ -25,6 +25,8 @@ add_library(ns-eof
         3rdparty/tinyxml2/tinyxml2.h
         parallelManagers/PetscParallelConfiguration.cpp
         parallelManagers/PetscParallelConfiguration.h
+        parallelManagers/PetscParallelManager.cpp
+        parallelManagers/PetscParallelManager.h
         solvers/PetscSolver.cpp
         solvers/PetscSolver.h
         solvers/SORSolver.cpp
@@ -49,10 +51,34 @@ add_library(ns-eof
         stencils/RHSStencil.cpp
         stencils/RHSStencil.h
         stencils/StencilFunctions.h
+        stencils/TurbulenceFGHStencil.cpp
+        stencils/TurbulenceFGHStencil.h
+        stencils/TurbulenceVTKStencil.cpp
+        stencils/TurbulenceVTKStencil.h
         stencils/VelocityStencil.cpp
         stencils/VelocityStencil.h
         stencils/VTKStencil.h
         stencils/VTKStencil.cpp
+	stencils/TurbulentViscosityStencil.h
+	stencils/TurbulentViscosityStencil.cpp
+        stencils/ObstacleDistanceStencil.h
+        stencils/ObstacleDistanceStencil.cpp
+        stencils/WallDistanceStencil.h
+        stencils/WallDistanceStencil.cpp
+        stencils/communicationStencils/CommunicationStencil.cpp
+		stencils/communicationStencils/Direction.cpp
+		stencils/communicationStencils/PressureBufferFillStencil.cpp
+		stencils/communicationStencils/PressureBufferReadStencil.cpp
+		stencils/communicationStencils/VelocityBufferFillStencil.cpp
+		stencils/communicationStencils/VelocityBufferReadStencil.cpp
+		stencils/communicationStencils/CommunicationStencil.h
+		stencils/communicationStencils/Direction.h
+		stencils/communicationStencils/PressureBufferFillStencil.h
+		stencils/communicationStencils/PressureBufferReadStencil.h
+		stencils/communicationStencils/VelocityBufferFillStencil.h
+		stencils/communicationStencils/VelocityBufferReadStencil.h
+		stencils/communicationStencils/WallDistanceBufferFillStencil.h
+		stencils/communicationStencils/WallDistanceBufferReadStencil.h
         Configuration.cpp
         Configuration.h
         DataStructures.cpp
@@ -72,17 +98,9 @@ add_library(ns-eof
         SimpleTimer.cpp
         SimpleTimer.h
         Simulation.h
-        Stencil.h
-        stencils/communicationStencils/PressureBufferFillStencil.cpp
-        stencils/communicationStencils/PressureBufferFillStencil.h
-        stencils/communicationStencils/PressureBufferReadStencil.cpp
-        stencils/communicationStencils/PressureBufferReadStencil.h
-        parallelManagers/PetscParallelManager.cpp
-        parallelManagers/PetscParallelManager.h
-        stencils/communicationStencils/CommunicationStencil.cpp
-        stencils/communicationStencils/CommunicationStencil.h
-        stencils/communicationStencils/Direction.h
-        stencils/communicationStencils/Direction.cpp stencils/communicationStencils/VelocityBufferFillStencil.cpp stencils/communicationStencils/VelocityBufferFillStencil.h stencils/communicationStencils/VelocityBufferReadStencil.cpp stencils/communicationStencils/VelocityBufferReadStencil.h)
+		Stencil.h 
+		TurbulentSimulation.h stencils/communicationStencils/ViscosityBufferFillStencil.cpp stencils/communicationStencils/ViscosityBufferFillStencil.h stencils/communicationStencils/ViscosityBufferReadStencil.cpp stencils/communicationStencils/ViscosityBufferReadStencil.h stencils/communicationStencils/WallDistanceBufferFillStencil.cpp stencils/communicationStencils/WallDistanceBufferFillStencil.h stencils/communicationStencils/WallDistanceBufferReadStencil.cpp stencils/communicationStencils/WallDistanceBufferReadStencil.h)
+
 target_link_libraries(ns-eof ${PETSC_LIBRARIES})
 
 add_executable(ns main.cpp)

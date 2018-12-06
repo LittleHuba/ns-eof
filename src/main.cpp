@@ -1,10 +1,11 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include "Configuration.h"
 #include "Simulation.h"
 #include "parallelManagers/PetscParallelConfiguration.h"
 #include "MeshsizeFactory.h"
+#include "TurbulentSimulation.h"
 #include <iomanip>
 
 int main(int argc, char *argv[]) {
@@ -26,8 +27,8 @@ int main(int argc, char *argv[]) {
     configuration.loadParameters(parameters);
     PetscParallelConfiguration parallelConfiguration(parameters);
     MeshsizeFactory::getInstance().initMeshsize(parameters);
-    FlowField *flowField = NULL;
-    Simulation *simulation = NULL;
+    FlowField *flowField = nullptr;
+    Simulation *simulation = nullptr;
 
 #ifdef DEBUG
     std::cout << "Processor " << parameters.parallel.rank << " with index ";
@@ -45,19 +46,20 @@ int main(int argc, char *argv[]) {
 #endif
 
     // initialise simulation
+    flowField = new FlowField(parameters);
     if (parameters.simulation.type == "turbulence") {
-        // TODO WS2: initialise turbulent flow field and turbulent simulation object
-        handleError(1, "Turbulence currently not supported yet!");
+        if (rank == 0) { std::cout << "Start turbulent DNS simulation in " << parameters.geometry.dim << "D" << std::endl; }
+        if (flowField == nullptr) {handleError(1, "flowField==NULL!"); }
+        simulation = new TurbulentSimulation(parameters, *flowField);
     } else if (parameters.simulation.type == "dns") {
         if (rank == 0) { std::cout << "Start DNS simulation in " << parameters.geometry.dim << "D" << std::endl; }
-        flowField = new FlowField(parameters);
-        if (flowField == NULL) {handleError(1, "flowField==NULL!"); }
+        if (flowField == nullptr) {handleError(1, "flowField==NULL!"); }
         simulation = new Simulation(parameters, *flowField);
     } else {
         handleError(1, "Unknown simulation type! Currently supported: dns, turbulence");
     }
     // call initialization of simulation (initialize flow field)
-    if (simulation == NULL) {handleError(1, "simulation==NULL!"); }
+    if (simulation == nullptr) {handleError(1, "simulation==NULL!"); }
     simulation->initializeFlowField();
     //flowField->getFlags().show();
 
@@ -96,9 +98,9 @@ int main(int argc, char *argv[]) {
     simulation->plotVTK(timeSteps);
 
     delete simulation;
-    simulation = NULL;
+    simulation = nullptr;
     delete flowField;
-    flowField = NULL;
+    flowField = nullptr;
 
     PetscFinalize();
 }

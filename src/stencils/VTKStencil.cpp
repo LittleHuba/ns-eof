@@ -13,7 +13,7 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     int pointsX = cellsX + 1;
     int pointsY = cellsY + 1;
     int pointsZ = cellsZ + 1;
-    
+
     // Write the header of the file
     this->_pointsStream.precision(6);
     this->_pointsStream << std::fixed;
@@ -28,7 +28,6 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
     this->_pointsStream << "POINTS " << pointsX * pointsY * pointsZ << " float" << std::endl;
 
     // Write the points of the grid
-    int count = 0;
     for (int k = 2; k < cellsZ + 3; k++) {
             for (int j = 2; j < cellsY + 3; j++) {
                 for (int i = 2; i < cellsX + 3; i++) {
@@ -36,29 +35,10 @@ VTKStencil::VTKStencil(const Parameters &parameters) : FieldStencil(parameters) 
                     this->_pointsStream << (_parameters.meshsize->getPosX(i, j, k)) << " "
                             << (_parameters.meshsize->getPosY(i, j, k)) << " "
                             << (_parameters.meshsize->getPosZ(i, j, k)) << std::endl;
-                            count++;
                 }
             }
         }
-    // if (parameters.geometry.dim == 2) {
-    //     for (int j = parameters.parallel.firstCorner[1] + 2; j <= parameters.parallel.firstCorner[1] + pointsY + 1; ++j) {
-    //         for (int i = parameters.parallel.firstCorner[0] + 2; i <= parameters.parallel.firstCorner[0] + pointsX + 1; ++i) {
-    //             this->_pointsStream << (parameters.meshsize->getPosX(i, j)) << " "
-    //                                 << (parameters.meshsize->getPosY(i, j)) << " "
-    //                                 << 0.0 << std::endl;
-    //         }
-    //     }
-    // } else if (parameters.geometry.dim == 3) {
-    //     for (int k = parameters.parallel.firstCorner[2] + 2; k <= parameters.parallel.firstCorner[2] + pointsZ + 1; ++k) {
-    //         for (int j = parameters.parallel.firstCorner[1] + 2; j <= parameters.parallel.firstCorner[1] + pointsY + 1; ++j) {
-    //             for (int i = parameters.parallel.firstCorner[0] + 2; i <= parameters.parallel.firstCorner[0] + pointsX + 1; ++i) {
-    //                 this->_pointsStream << (parameters.meshsize->getPosX(i, j, k)) << " "
-    //                                     << (parameters.meshsize->getPosY(i, j, k)) << " "
-    //                                     << (parameters.meshsize->getPosZ(i, j, k)) << std::endl;
-    //             }
-    //         }
-    //     }
-    // }
+
 
     if(_parameters.geometry.dim == 2){
         cellsZ = 1;
@@ -124,7 +104,7 @@ void VTKStencil::write(int timeStep) {
     write(timeStep, vtkFile);
 }
 
-void VTKStencil::write(int timeStep, std::ofstream &vtkFile) {
+void VTKStencil::write(int timeStep, std::basic_ofstream<char> &vtkFile) {
     if(_parameters.parallel.rank==0) std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank) + "_" + std::to_string(timeStep) + ".vtk";
 

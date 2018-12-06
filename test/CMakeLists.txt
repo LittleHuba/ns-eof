@@ -8,9 +8,13 @@ add_definitions (-DBOOST_TEST_DYN_LINK)
 include_directories(stencils)
 
 add_executable (boost_test
-        test_main.cpp
+        TestSuite.cpp
         stencils/communicationStencils/Direction.test.cpp
-        stencils/VTKStencilTests.cpp)
+        stencils/VTKStencilTests.cpp
+        stencils/TurbulenceVTKStencilTests.cpp
+        stencils/WallDistanceStencilsTests.cpp
+        TestingFunctions.h
+        stencils/StencilFunctionsTests.cpp)
 
 target_link_libraries (boost_test
         ${PETSC_LIBRARIES}

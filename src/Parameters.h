@@ -132,6 +132,14 @@ class BFStepParameters{
         FLOAT yRatio;
 };
 
+class TurbulenceParameters{
+public:
+    // Boundary layer thickness
+        FLOAT delta;
+    // Fitting parameter for Prandtls' mixing length model
+        FLOAT kappa;
+};
+
 
 
 //@}
@@ -154,7 +162,7 @@ class Parameters {
         ParallelParameters      parallel;
         StdOutParameters        stdOut;
         BFStepParameters        bfStep;
-        // TODO WS2: include parameters for turbulence
+        TurbulenceParameters    turbulence;
         Meshsize                *meshsize;
 };
 

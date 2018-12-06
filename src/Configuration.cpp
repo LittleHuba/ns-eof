@@ -2,6 +2,7 @@
 #include "3rdparty/tinyxml2/tinyxml2.h"
 #include <string>
 #include "Parameters.h"
+#include <mpi.h>
 
 void readFloatMandatory(FLOAT & storage, tinyxml2::XMLElement *node, const char* tag){
     double value;   // Use to be able to select precision
@@ -418,8 +419,14 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
 
 
         //------------------------------------------------------
-        // TODO WS2: Turbulence
+        // Turbulence
         //------------------------------------------------------
+        parameters.turbulence.kappa = 0.41;
+        node = confFile.FirstChildElement()->FirstChildElement("turbulence");
+        if (node != NULL){
+            readFloatMandatory(parameters.turbulence.delta, node, "delta");
+            readFloatOptional(parameters.turbulence.kappa, node, "kappa");
+        }
     }
 
     // Broadcasting of the values
@@ -477,7 +484,7 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
     MPI_Bcast(parameters.walls.vectorFront,  3, MY_MPI_FLOAT, 0, communicator);
     MPI_Bcast(parameters.walls.vectorBack,   3, MY_MPI_FLOAT, 0, communicator);
 
-    // TODO WS2: broadcast turbulence parameters
-
-
+    // Broadcast turbulence parameters
+    MPI_Bcast(&(parameters.turbulence.kappa), 1, MY_MPI_FLOAT, 0, communicator);
+    MPI_Bcast(&(parameters.turbulence.delta), 1, MY_MPI_FLOAT, 0, communicator);
 }
