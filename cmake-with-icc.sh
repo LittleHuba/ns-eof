@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-#if command -v module 1>/dev/null 2>&1; then
-#    # Load modules here if needed
-#fi
+if command -v module 1>/dev/null 2>&1; then
+    # Load modules here if needed
+    module unload boost
+    module load boost/1.61_icc
+fi
 
 export CC=icc
 export CXX=icpc
+export BOOST_ROOT=${BOOST_BASE}
 
 #BUILD_TYPE="Debug"
 #BUILD_TYPE="RelWithDebInfo"

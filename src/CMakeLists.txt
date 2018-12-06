@@ -9,6 +9,8 @@ include_directories(${PETSC_INCLUDES})
 
 add_definitions(${PETSC_DEFINITIONS})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
     message(">>> Debug mode")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -ggdb -pg")
