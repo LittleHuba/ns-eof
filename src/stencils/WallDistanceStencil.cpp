@@ -11,15 +11,15 @@ WallDistanceStencil::WallDistanceStencil(const Parameters &parameters, FlowField
 
     // Reinitialize the wall distance to the maximum value to simplify first iteration
     if (parameters.geometry.dim == 2) {
-        for (int j = 2; j < cellsY + 2; ++j) {
-            for (int i = 2; i < cellsX + 2; ++i) {
+        for (int j = 1; j < cellsY + 3; ++j) {
+            for (int i = 1; i < cellsX + 3; ++i) {
                 flowField.getNearestWallDistance().getScalar(i, j) = MY_FLOAT_MAX;
             }
         }
     } else if (parameters.geometry.dim == 3) {
-        for (int k = 2; k < cellsZ + 2; ++k) {
-            for (int j = 2; j < cellsY + 2; ++j) {
-                for (int i = 2; i < cellsX + 2; ++i) {
+        for (int k = 1; k < cellsZ + 3; ++k) {
+            for (int j = 1; j < cellsY + 3; ++j) {
+                for (int i = 1; i < cellsX + 3; ++i) {
                     flowField.getNearestWallDistance().getScalar(i, j, k) = MY_FLOAT_MAX;
                 }
             }
