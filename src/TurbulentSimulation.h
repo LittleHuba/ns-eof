@@ -82,6 +82,10 @@ public:
 
     /** plots the flow field. */
     void plotVTK(int timeStep) override {
+        // Skip output when timestep equals zero
+        if(timeStep == 0.0)
+            return;
+
         // iterate stencil over _flowField
         _turbulenceVTKIterator.iterate();
         // write flow field information to vtk file

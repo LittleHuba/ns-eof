@@ -195,10 +195,13 @@ public:
     /** plots the flow field. */
     virtual void plotVTK(int timeStep)
     {
-        // iterate stencil over _flowField
-        _vtkIterator.iterate();
-        // write flow field information to vtk file
-        _vtkStencil.write(timeStep);
+        if(!timeStep)
+        {
+            // iterate stencil over _flowField
+            _vtkIterator.iterate();
+            // write flow field information to vtk file
+            _vtkStencil.write(timeStep);
+        }
     }
 
 protected:
