@@ -54,7 +54,7 @@ public:
      * @param timeStep The timestep to write
      * @param vtkFile Used for testing (to redirect output to internal testing stream)
      */
-    virtual void write(int timeStep, std::basic_ofstream<char> *vtkFile);
+    virtual void write(int timeStep, std::basic_ofstream<char> &vtkFile);
 
 };
 

@@ -31,37 +31,37 @@ inline void TurbulenceVTKStencil::apply(FlowField &flowField, int i, int j, int 
 
 void TurbulenceVTKStencil::write(int timeStep) {
     std::ofstream vtkFile;
-    write(timeStep, &vtkFile);
+    write(timeStep, vtkFile);
 }
 
-void TurbulenceVTKStencil::write(int timeStep, std::basic_ofstream<char> *vtkFile) {
+void TurbulenceVTKStencil::write(int timeStep, std::basic_ofstream<char> &vtkFile) {
     if(_parameters.parallel.rank==0) std::cout << "Writing VTK output for timestep " << std::to_string(timeStep) << std::endl;
     std::string filename = _parameters.vtk.prefix + "_" + std::to_string(_parameters.parallel.rank)
                            + "_" + std::to_string(timeStep) + ".vtk";
 
-    vtkFile->open(filename);
-    if (vtkFile->is_open()) {
+    vtkFile.open(filename);
+    if (vtkFile.is_open()) {
         // Write the header and points to the file
-        *vtkFile << this->_pointsStream.str();
+        vtkFile << this->_pointsStream.str();
 
         // Write the pressure data to the file
-        *vtkFile << "SCALARS pressure float 1" << std::endl;
-        *vtkFile << "LOOKUP_TABLE default" << std::endl;
-        *vtkFile << this->_pressureStream.rdbuf();
+        vtkFile << "SCALARS pressure float 1" << std::endl;
+        vtkFile << "LOOKUP_TABLE default" << std::endl;
+        vtkFile << this->_pressureStream.rdbuf();
 
         // Write the velocity data to the file
-        *vtkFile << std::endl;
-        *vtkFile << "VECTORS velocity float" << std::endl;
-        *vtkFile << this->_velocityStream.rdbuf();
+        vtkFile << std::endl;
+        vtkFile << "VECTORS velocity float" << std::endl;
+        vtkFile << this->_velocityStream.rdbuf();
 
         // Write the viscosity data to the file
-        *vtkFile << std::endl;
-        *vtkFile << "SCALARS viscosity float 1" << std::endl;
-        *vtkFile << "LOOKUP_TABLE default" << std::endl;
-        *vtkFile << this->_viscosityStream.rdbuf();
-        *vtkFile << std::endl << std::endl;
+        vtkFile << std::endl;
+        vtkFile << "SCALARS viscosity float 1" << std::endl;
+        vtkFile << "LOOKUP_TABLE default" << std::endl;
+        vtkFile << this->_viscosityStream.rdbuf();
+        vtkFile << std::endl << std::endl;
 
-        vtkFile->close();
+        vtkFile.close();
     } else std::cerr << "Unable to open vtk output file for timestep " << timeStep << std::endl;
 
     // Empty the data streams for the next timestep
