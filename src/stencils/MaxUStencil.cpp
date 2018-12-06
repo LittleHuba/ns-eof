@@ -59,6 +59,7 @@ void MaxUStencil::applyBackWall   ( FlowField & flowField, int i, int j, int k )
 
 void MaxUStencil::cellMaxValue(FlowField & flowField, int i, int j){
     FLOAT * velocity = flowField.getVelocity().getVector(i, j);
+    FLOAT reynolds = flowField.getTurbulentViscosity().getScalar(i,j);
     const FLOAT dx = FieldStencil<FlowField>::_parameters.meshsize->getDx(i,j);
     const FLOAT dy = FieldStencil<FlowField>::_parameters.meshsize->getDy(i,j);
     if (fabs(velocity[0])/dx > _maxValues[0]){
@@ -67,10 +68,15 @@ void MaxUStencil::cellMaxValue(FlowField & flowField, int i, int j){
     if (fabs(velocity[1])/dy > _maxValues[1]){
         _maxValues[1] = fabs(velocity[1])/dy;
     }
+    if (reynolds < _minReynolds){
+        _minReynolds = reynolds;
+    }
+
 }
 
 void MaxUStencil::cellMaxValue(FlowField & flowField, int i, int j, int k){
     FLOAT * velocity = flowField.getVelocity().getVector(i, j, k);
+    FLOAT reynolds = flowField.getTurbulentViscosity().getScalar(i,j,k);
     const FLOAT dx = FieldStencil<FlowField>::_parameters.meshsize->getDx(i,j,k);
     const FLOAT dy = FieldStencil<FlowField>::_parameters.meshsize->getDy(i,j,k);
     const FLOAT dz = FieldStencil<FlowField>::_parameters.meshsize->getDz(i,j,k);
@@ -83,6 +89,9 @@ void MaxUStencil::cellMaxValue(FlowField & flowField, int i, int j, int k){
     if (fabs(velocity[2])/dz > _maxValues[2]){
         _maxValues[2] = fabs(velocity[2])/dz;
     }
+    if (reynolds < _minReynolds){
+        _minReynolds = reynolds;
+    }
 }
 
 void MaxUStencil::reset () {
@@ -93,4 +102,8 @@ void MaxUStencil::reset () {
 
 const FLOAT * MaxUStencil::getMaxValues() const{
     return _maxValues;
+
+}
+const FLOAT  MaxUStencil::getMinReynold() const{
+    return _minReynolds;
 }
