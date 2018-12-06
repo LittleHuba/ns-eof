@@ -1,11 +1,13 @@
-#ifndef _STENCIL_TFGH_H_
-#define _STENCIL_TFGH_H_
+#ifndef TURBULENTVISCOSITYSTENCIL_H
+#define TURBULENTVISCOSITYSTENCIL_H
 
 #include "../FlowField.h"
 #include "../Stencil.h"
 #include "../Parameters.h"
 
-class TurbulenceFGHStencil : public FieldStencil<FlowField> {
+class TurbulentViscosityStencil : public FieldStencil<FlowField>
+{
+
 
 private:
 
@@ -15,13 +17,10 @@ private:
     // local meshsize
     FLOAT _localMeshsize [ 27 * 3 ];
 
-    //adding Turbulence Parameters
-    FLOAT _localViscosity [ 27 *3 ];
-
-
 public:
+    TurbulentViscosityStencil(const Parameters &parameters);
 
-    explicit TurbulenceFGHStencil(const Parameters &parameters);
+
 
     /** Apply the stencil in 2D
      *
@@ -40,7 +39,7 @@ public:
      * @param k Index in the z direction
      */
     void apply(FlowField &flowField, int i, int j, int k) override;
+
 };
 
-
-#endif
+#endif // TURBULENTVISCOSITYSTENCIL_H

@@ -47,6 +47,8 @@ add_library(ns-eof
         stencils/VelocityStencil.h
         stencils/VTKStencil.h
         stencils/VTKStencil.cpp
+	stencils/TurbulentViscosityStencil.h
+	stencils/TurbulentViscosityStencil.cpp
         stencils/ObstacleDistanceStencil.h
         stencils/ObstacleDistanceStencil.cpp
         stencils/WallDistanceStencil.h
