@@ -9,9 +9,11 @@
 
 // Load the local velocity cube with relevant velocities of the 2D plane
 inline void loadLocalVelocity2D(FlowField & flowField, FLOAT * const localVelocity, int i, int j){
+//    std::cout << i  << " " << j << std::endl;
     for (int row = -1; row <= 1; row++ ){
         for ( int column = -1; column <= 1; column ++ ){
             const FLOAT * const point = flowField.getVelocity().getVector(i + column, j + row);
+
             localVelocity[39 + 9*row + 3*column]     = point[0]; // x-component
             localVelocity[39 + 9*row + 3*column + 1] = point[1]; // y-component
         }
@@ -1232,6 +1234,16 @@ inline FLOAT computeSTP3D(const FLOAT * const localVelocity, const FLOAT * const
 
 inline FLOAT computeSTP2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize)
 {
+//    std::cout << "dudx_b  " << dudx_b(localVelocity,localMeshsize) << std::endl;
+//    std::cout << "dvdy_b  " << dvdy_b(localVelocity,localMeshsize) << std::endl;
+//    std::cout << "dvdxm  " << dvdxm(localVelocity,localMeshsize) << std::endl;
+//    std::cout << "dudym  " << dudym(localVelocity,localMeshsize) << "\n" << std::endl;
+//
+//    std::cout << "SUM   " << sqrt(2*((dudx_b(localVelocity,localMeshsize)*dudx_b(localVelocity,localMeshsize))
+//                                     +(dvdy_b(localVelocity,localMeshsize)*dvdy_b(localVelocity,localMeshsize))
+//                                     +0.5*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize)))
+//    ) << std::endl;
+
    return std::sqrt(2*((dudx_b(localVelocity,localMeshsize)*dudx_b(localVelocity,localMeshsize))
                         +(dvdy_b(localVelocity,localMeshsize)*dvdy_b(localVelocity,localMeshsize))
                         +0.5*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize)))

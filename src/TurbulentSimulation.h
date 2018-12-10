@@ -33,7 +33,7 @@ public:
     _turbulenceVTKStencil(parameters),
     _turbulenceVTKIterator(flowField, parameters, _turbulenceVTKStencil, 1),
     _turbulentViscosityStencil(parameters),
-    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1, -1),
+    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 2, -1),
     _turbulenceFGHStencil(parameters),
     _turbulenceFGHIterator(flowField, parameters, _turbulenceFGHStencil) {
 
@@ -63,8 +63,16 @@ public:
         // int rank = _parameters.parallel.rank;
         // determine and set max. timestep which is allowed in this simulation
         setTimeStep();
+
         // compute turbulent viscosity
-        //_turbulentViscosityIterator.iterate();
+//        std::cout << "Viscosity" << std::endl;
+
+        _turbulentViscosityIterator.iterate();
+
+        _parallelManager.exchangeViscosity();
+
+//        printArray(0, "Viscosity");
+//        std::cout << "FGH" << std::endl;
         // compute fgh
         _turbulenceFGHIterator.iterate();
         // set global boundary values
