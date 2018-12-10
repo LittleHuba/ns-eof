@@ -15,21 +15,12 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
     FLOAT x=_parameters.meshsize->getPosX(i,j) + _parameters.meshsize->getDx(i, j) / 2;
     //Boundary layer thickness for turbulent boundary layer
     delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
-
-    if(0.09*delta>flowField.getNearestWallDistance().getScalar(i,j))
-    {
-        flowField.getTurbulentViscosity().getScalar(i,j)=_parameters.turbulence.kappa*_parameters.turbulence.kappa
-                *flowField.getNearestWallDistance().getScalar(i,j)*flowField.getNearestWallDistance().getScalar(i,j)
-                *computeSTP2D(_localVelocity, _localMeshsize);
-    }
-
-    else
-    {
-        flowField.getTurbulentViscosity().getScalar(i,j)=delta*delta*computeSTP2D(_localVelocity, _localMeshsize);
-    }
-
-
-
+    
+    FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j);
+    FLOAT kappa = _parameters.turbulence.kappa;
+    FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j);
+    FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
+    viscosity = mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
 }
 
 
