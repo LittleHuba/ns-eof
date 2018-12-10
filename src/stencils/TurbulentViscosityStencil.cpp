@@ -23,7 +23,7 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j);
         FLOAT kappa = _parameters.turbulence.kappa;
         FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j);
-        FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
+        FLOAT mixingLength = kappa * h;
         viscosity = mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
     }
 }
@@ -48,7 +48,7 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j, int k)
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j, k);
         FLOAT kappa = _parameters.turbulence.kappa;
         FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j, k);
-        FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
+        FLOAT mixingLength = kappa * h;
         viscosity = mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
     }
 }
