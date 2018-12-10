@@ -11,20 +11,20 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
 
     if ((obstacle & OBSTACLE_SELF) == 0){   // If the cell is fluid
       
-        loadLocalVelocity2D(  flowField, _localVelocity, i, j);
-        loadLocalMeshsize2D(_parameters, _localMeshsize, i, j);
+        //loadLocalVelocity2D(  flowField, _localVelocity, i, j);
+        //loadLocalMeshsize2D(_parameters, _localMeshsize, i, j);
 
-        FLOAT delta;
+        //FLOAT delta;
         //length in x direction
-        FLOAT x=_parameters.meshsize->getPosX(i,j) + _parameters.meshsize->getDx(i, j) / 2;
+        //FLOAT x=_parameters.meshsize->getPosX(i,j) + _parameters.meshsize->getDx(i, j) / 2;
         //Boundary layer thickness for turbulent boundary layer
-        delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
+        //delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
 
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j);
-        FLOAT kappa = _parameters.turbulence.kappa;
-        FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j);
-        FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
-        viscosity = mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
+        //FLOAT kappa = _parameters.turbulence.kappa;
+        //FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j);
+        //FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
+        viscosity = 0;//mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
     }
 }
 
@@ -36,19 +36,19 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j, int k)
 
     if ((obstacle & OBSTACLE_SELF) == 0){   // If the cell is fluid
 
-        loadLocalVelocity3D(  flowField, _localVelocity, i, j, k);
-        loadLocalMeshsize3D(_parameters, _localMeshsize, i, j, k);
+        //loadLocalVelocity3D(  flowField, _localVelocity, i, j, k);
+        //loadLocalMeshsize3D(_parameters, _localMeshsize, i, j, k);
 
-        FLOAT delta;
+        //FLOAT delta;
         //length in x direction
-        FLOAT x=_parameters.meshsize->getPosX(i,j,k) + _parameters.meshsize->getDx(i, j, k) / 2;
+        //FLOAT x=_parameters.meshsize->getPosX(i,j,k) + _parameters.meshsize->getDx(i, j, k) / 2;
         //Boundary layer thickness for turbulent boundary layer
-        delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
+        //delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
 
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j, k);
-        FLOAT kappa = _parameters.turbulence.kappa;
-        FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j, k);
-        FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
-        viscosity = mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
+        //FLOAT kappa = _parameters.turbulence.kappa;
+        //FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j, k);
+        //FLOAT mixingLength = fmin(kappa * h, 0.09 * delta);
+        viscosity =0; //mixingLength * mixingLength * computeSTP2D(_localVelocity, _localMeshsize);
     }
 }
