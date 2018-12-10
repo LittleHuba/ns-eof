@@ -36,7 +36,6 @@ public:
     _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1),
     _turbulenceFGHStencil(parameters),
     _turbulenceFGHIterator(flowField, parameters, _turbulenceFGHStencil) {
-
     }
 
     void initializeFlowField() override {
