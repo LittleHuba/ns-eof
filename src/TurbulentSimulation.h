@@ -19,6 +19,10 @@ protected:
     FieldIterator<FlowField> _obstacleDistanceIterator;
     TurbulenceVTKStencil _turbulenceVTKStencil;
     FieldIterator<FlowField>_turbulenceVTKIterator;
+    TurbulentViscosityStencil _turbulentViscosityStencil;
+    FieldIterator<FlowField> _turbulentViscosityIterator;
+    TurbulenceFGHStencil _turbulenceFGHStencil;
+    FieldIterator<FlowField> _turbulenceFGHIterator;
 public:
     TurbulentSimulation(Parameters &parameters, FlowField &flowField) :
     Simulation(parameters, flowField),
@@ -27,7 +31,11 @@ public:
     _wallDistanceIterator(flowField, parameters, _wallDistanceStencil, 2, -1),
     _obstacleDistanceIterator(flowField, parameters, _obstacleDistanceStencil, 1),
     _turbulenceVTKStencil(parameters),
-    _turbulenceVTKIterator(flowField, parameters, _turbulenceVTKStencil, 1) {
+    _turbulenceVTKIterator(flowField, parameters, _turbulenceVTKStencil, 1),
+    _turbulentViscosityStencil(parameters),
+    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1),
+    _turbulenceFGHStencil(parameters),
+    _turbulenceFGHIterator(flowField, parameters, _turbulenceFGHStencil) {
 
     }
 
@@ -52,8 +60,10 @@ public:
         // int rank = _parameters.parallel.rank;
         // determine and set max. timestep which is allowed in this simulation
         setTimeStep();
+        // compute turbulent viscosity
+        _turbulentViscosityIterator.iterate();
         // compute fgh
-        _fghIterator.iterate();
+        _turbulenceFGHIterator.iterate();
         // set global boundary values
         _wallFGHIterator.iterate();
         // compute the right hand side
