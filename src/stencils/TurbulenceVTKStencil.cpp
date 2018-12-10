@@ -3,6 +3,8 @@
 TurbulenceVTKStencil::TurbulenceVTKStencil(const Parameters &parameters) : VTKStencil(parameters) {
     this->_viscosityStream.precision(6);
     this->_viscosityStream << std::fixed;
+    this->_wallDistanceStream.precision(6);
+    this->_wallDistanceStream << std::fixed;
 }
 
 inline void TurbulenceVTKStencil::apply(FlowField &flowField, int i, int j) {
@@ -65,7 +67,6 @@ void TurbulenceVTKStencil::write(int timeStep, std::basic_ofstream<char> &vtkFil
         vtkFile << "SCALARS viscosity float 1" << std::endl;
         vtkFile << "LOOKUP_TABLE default" << std::endl;
         vtkFile << this->_viscosityStream.rdbuf();
-        vtkFile << std::endl << std::endl;
 
         // Write the viscosity data to the file
         vtkFile << std::endl;

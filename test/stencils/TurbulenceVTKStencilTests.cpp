@@ -289,6 +289,7 @@ BOOST_AUTO_TEST_SUITE(TurbulenceVTKStencilTests)
                 flowField->getVelocity().getVector(i, j)[1] = j;
                 flowField->getVelocity().getVector(i, j)[2] = i * j;
                 flowField->getTurbulentViscosity().getScalar(i, j) = 2 * i * j;
+                flowField->getNearestWallDistance().getScalar(i, j) = 3 * i * j;
             }
         }
 
@@ -335,6 +336,13 @@ BOOST_AUTO_TEST_SUITE(TurbulenceVTKStencilTests)
                                                   "12.000000\n"
                                                   "18.000000\n"
                                                   "\n"
+                                                  "SCALARS wallDistance float 1\n"
+                                                  "LOOKUP_TABLE default\n"
+                                                  "12.000000\n"
+                                                  "18.000000\n"
+                                                  "18.000000\n"
+                                                  "27.000000\n"
+                                                  "\n"
                                                   "\n");
 
         delete vtkIterator;
@@ -357,6 +365,7 @@ BOOST_AUTO_TEST_SUITE(TurbulenceVTKStencilTests)
                     flowField->getVelocity().getVector(i, j, k)[1] = j;
                     flowField->getVelocity().getVector(i, j, k)[2] = k;
                     flowField->getTurbulentViscosity().getScalar(i, j, k) = 2 * i * j * k;
+                    flowField->getNearestWallDistance().getScalar(i, j, k) = 3 * i * j * k;
                 }
             }
         }
@@ -433,6 +442,17 @@ BOOST_AUTO_TEST_SUITE(TurbulenceVTKStencilTests)
                                                   "36.000000\n"
                                                   "36.000000\n"
                                                   "54.000000\n"
+                                                  "\n"
+                                                  "SCALARS wallDistance float 1\n"
+                                                  "LOOKUP_TABLE default\n"
+                                                  "24.000000\n"
+                                                  "36.000000\n"
+                                                  "36.000000\n"
+                                                  "54.000000\n"
+                                                  "36.000000\n"
+                                                  "54.000000\n"
+                                                  "54.000000\n"
+                                                  "81.000000\n"
                                                   "\n"
                                                   "\n");
 
