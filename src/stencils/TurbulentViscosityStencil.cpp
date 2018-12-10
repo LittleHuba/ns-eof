@@ -16,7 +16,7 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
     //Boundary layer thickness for turbulent boundary layer
     delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
 
-    std::cout << i << " " << j << std::endl;
+//    std::cout << i << " " << j << std::endl;
 //    if(0.09*delta>flowField.getNearestWallDistance().getScalar(i,j))
 //    {
 //        flowField.getTurbulentViscosity().getScalar(i,j)=_parameters.turbulence.kappa*_parameters.turbulence.kappa
