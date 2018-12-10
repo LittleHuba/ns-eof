@@ -65,6 +65,9 @@ public:
         setTimeStep();
         // compute turbulent viscosity
         _turbulentViscosityIterator.iterate();
+        // communicate viscosity values
+        _parallelManager.exchangeViscosity();
+
         // compute fgh
         _turbulenceFGHIterator.iterate();
         // set global boundary values
