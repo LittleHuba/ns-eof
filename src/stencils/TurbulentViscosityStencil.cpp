@@ -16,27 +16,6 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
     //Boundary layer thickness for turbulent boundary layer
     delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
 
-//    std::cout << i << " " << j << std::endl;
-//    if(0.09*delta>flowField.getNearestWallDistance().getScalar(i,j))
-//    {
-//        flowField.getTurbulentViscosity().getScalar(i,j)=_parameters.turbulence.kappa*_parameters.turbulence.kappa
-//                *flowField.getNearestWallDistance().getScalar(i,j)*flowField.getNearestWallDistance().getScalar(i,j)
-//                *computeSTP2D(_localVelocity, _localMeshsize);
-////        std::cout << _parameters.turbulence.kappa*_parameters.turbulence.kappa
-////                     *flowField.getNearestWallDistance().getScalar(i,j)*flowField.getNearestWallDistance().getScalar(i,j)
-////                     *computeSTP2D(_localVelocity, _localMeshsize) << std::endl;
-////        std::cout << computeSTP2D(_localVelocity, _localMeshsize) << std::endl;
-//    }
-//
-//    else
-//    {
-//        flowField.getTurbulentViscosity().getScalar(i,j)=delta*delta*computeSTP2D(_localVelocity, _localMeshsize);
-//
-////        std::cout << delta << std::endl;
-////
-////        std::cout << computeSTP2D(_localVelocity, _localMeshsize) * delta << std::endl;
-//
-//    }
     FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j);
     FLOAT k = _parameters.turbulence.kappa;
     FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j);
@@ -63,7 +42,7 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j, int k)
         FLOAT x=_parameters.meshsize->getPosX(i,j,k) + _parameters.meshsize->getDx(i, j, k) / 2;
         //Boundary layer thickness for turbulent boundary layer
         delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
-        
+
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j);
         FLOAT kappa = _parameters.turbulence.kappa;
         FLOAT &h = flowField.getNearestWallDistance().getScalar(i, j);

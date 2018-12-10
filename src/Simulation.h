@@ -149,9 +149,9 @@ public:
         std::cout << location << std::endl;
         for(int j=_parameters.parallel.localSize[1]+2; j >= 0; j--){
             for(int i=0; i <= _parameters.parallel.localSize[0]+2; i++){
-                std::cout << std::setprecision(3) << std::setw(10) << _flowField.getTurbulentViscosity().getScalar(i, j) << " ";
-//                 std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[0] << " ";
-//                 std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[1] << " ";
+                std::cout << std::setprecision(3) << std::setw(10) << _flowField.getPressure().getScalar(i, j) << " ";
+                // std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[0] << " ";
+                // std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[1] << " ";
                 // std::cout << flowField->getVelocity().getVector(i , j)[1] << " ";
             }
             std::cout << std::endl;
@@ -229,12 +229,10 @@ protected:
             _parameters.timestep.dt = 1.0 / _maxUStencil.getMaxValues()[0];
         }
 
-
         localMin = std::min(_parameters.timestep.dt,
                             std::min(std::min(_parameters.flow.Re / (2 * factor),
                                               1.0 / _maxUStencil.getMaxValues()[0]),
                                      1.0 / _maxUStencil.getMaxValues()[1]));
-
 
         // Here, we select the type of operation before compiling. This allows to use the correct
         // data type for MPI. Not a concern for small simulations, but useful if using heterogeneous
