@@ -149,9 +149,9 @@ public:
         std::cout << location << std::endl;
         for(int j=_parameters.parallel.localSize[1]+2; j >= 0; j--){
             for(int i=0; i <= _parameters.parallel.localSize[0]+2; i++){
-                std::cout << std::setprecision(3) << std::setw(10) << _flowField.getPressure().getScalar(i, j) << " ";
-                // std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[0] << " ";
-                // std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[1] << " ";
+                std::cout << std::setprecision(3) << std::setw(10) << _flowField.getTurbulentViscosity().getScalar(i, j) << " ";
+//                 std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[0] << " ";
+//                 std::cout << std::setprecision(3) << std::setw(10) << _flowField.getVelocity().getVector(i , j)[1] << " ";
                 // std::cout << flowField->getVelocity().getVector(i , j)[1] << " ";
             }
             std::cout << std::endl;

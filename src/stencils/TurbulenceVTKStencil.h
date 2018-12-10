@@ -16,6 +16,7 @@
 class TurbulenceVTKStencil : public VTKStencil {
 protected:
     std::stringstream _viscosityStream;
+    std::stringstream _wallDistanceStream;
 
 public:
 
