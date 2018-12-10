@@ -33,7 +33,7 @@ public:
     _turbulenceVTKStencil(parameters),
     _turbulenceVTKIterator(flowField, parameters, _turbulenceVTKStencil, 1),
     _turbulentViscosityStencil(parameters),
-    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1, 0),
+    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1),
     _turbulenceFGHStencil(parameters),
     _turbulenceFGHIterator(flowField, parameters, _turbulenceFGHStencil) {
     }
