@@ -54,6 +54,9 @@ public:
 
         _obstacleDistanceIterator.iterate();
         _obstacleDistanceIterator.iterateBackwards();
+
+        // transfer wall distance
+        _parallelManager.exchangeWallDistance();
     }
 
     void solveTimestep() override {
