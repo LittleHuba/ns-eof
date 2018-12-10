@@ -90,7 +90,6 @@ public:
         // communicate velocity values
         // if(rank==1)printArray(1, "After boundary updates");
         _parallelManager.exchangeVelocity();
-        _parallelManager.exchangeViscosity();
         // if(rank==1)printArray(1, "After velocity communication");
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
