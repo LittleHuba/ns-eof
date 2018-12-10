@@ -1,0 +1,7 @@
+#!/bin/bash
+#SBATCH -D /home/hpc/t1221/lu26xut/parallel/ns-eof #starting directory
+     <geometry dim="2" lengthX="1.0" lengthY="1.0" lengthZ="1.0" sizeX="60" sizeY="60" sizeZ="1">
+#SBATCH --get-user-env #load user environment settings
+#SBATCH --clusters=mpp2
+     <parallel numProcessorsX="2" numProcessorsY="2" numProcessorsZ="1" />
+</configuration>
