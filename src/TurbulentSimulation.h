@@ -33,7 +33,7 @@ public:
     _turbulenceVTKStencil(parameters),
     _turbulenceVTKIterator(flowField, parameters, _turbulenceVTKStencil, 1),
     _turbulentViscosityStencil(parameters),
-    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1),
+    _turbulentViscosityIterator(flowField, parameters, _turbulentViscosityStencil, 1, 0),
     _turbulenceFGHStencil(parameters),
     _turbulenceFGHIterator(flowField, parameters, _turbulenceFGHStencil) {
     }
@@ -64,14 +64,10 @@ public:
         setTimeStep();
 
         // compute turbulent viscosity
-//        std::cout << "Viscosity" << std::endl;
-
         _turbulentViscosityIterator.iterate();
-
+        // communicate viscosity values
         _parallelManager.exchangeViscosity();
 
-//        printArray(0, "Viscosity");
-//        std::cout << "FGH" << std::endl;
         // compute fgh
         _turbulenceFGHIterator.iterate();
         // set global boundary values
@@ -94,7 +90,6 @@ public:
         // communicate velocity values
         // if(rank==1)printArray(1, "After boundary updates");
         _parallelManager.exchangeVelocity();
-        _parallelManager.exchangeViscosity();
         // if(rank==1)printArray(1, "After velocity communication");
         // Iterate for velocities on the boundary
         _wallVelocityIterator.iterate();
