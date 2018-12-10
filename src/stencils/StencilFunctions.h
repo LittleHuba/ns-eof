@@ -1221,9 +1221,9 @@ inline FLOAT computeTurbulentH3D(const FLOAT * const localVelocity, const FLOAT 
 //computes the squareroot of 2 times the Product of the Shearrate Sij*Sij, sqrt(2*Sij*Sij)
 inline FLOAT computeSTP3D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize)
 {
-    return std::sqrt(2*((dudx_b(localVelocity,localMeshsize)*dudx_b(localVelocity,localMeshsize))
-                        +(dvdy_b(localVelocity,localMeshsize)*dvdy_b(localVelocity,localMeshsize))
-                        +(dwdz_b(localVelocity,localMeshsize)*dwdz_b(localVelocity,localMeshsize))
+    return std::sqrt(2*(std::pow(dudx_b(localVelocity,localMeshsize), 2)
+                        +std::pow(dvdy_b(localVelocity,localMeshsize), 2)
+                        +std::pow(dwdz_b(localVelocity,localMeshsize), 2)
                         +0.5*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))
                         +0.5*(dudzm(localVelocity,localMeshsize)+dwdxm(localVelocity,localMeshsize))*(dudzm(localVelocity,localMeshsize)+dwdxm(localVelocity,localMeshsize))
                         +0.5*(dvdzm(localVelocity,localMeshsize)+dwdym(localVelocity,localMeshsize))*(dvdzm(localVelocity,localMeshsize)+dwdym(localVelocity,localMeshsize)))
@@ -1232,10 +1232,10 @@ inline FLOAT computeSTP3D(const FLOAT * const localVelocity, const FLOAT * const
 
 inline FLOAT computeSTP2D(const FLOAT * const localVelocity, const FLOAT * const localMeshsize)
 {
-   return std::sqrt(2*((dudx_b(localVelocity,localMeshsize)*dudx_b(localVelocity,localMeshsize))
-                        +(dvdy_b(localVelocity,localMeshsize)*dvdy_b(localVelocity,localMeshsize))
+   return std::sqrt(2*((std::pow(dudx_b(localVelocity,localMeshsize), 2)
+                        +std::pow(dvdy_b(localVelocity,localMeshsize), 2)
                         +0.5*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize))*(dvdxm(localVelocity,localMeshsize)+dudym(localVelocity,localMeshsize)))
-                     );
+                     ));
 
 }
 
