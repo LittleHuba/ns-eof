@@ -18,7 +18,7 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j)
         //length in x direction
         FLOAT x=_parameters.meshsize->getPosX(i,j) + _parameters.meshsize->getDx(i, j) / 2;
         //Boundary layer thickness for turbulent boundary layer
-        delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
+        delta=4.91*x/std::sqrt(_parameters.flow.Re*x/_parameters.geometry.lengthX);
 
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j);
         FLOAT kappa = _parameters.turbulence.kappa;
@@ -43,7 +43,7 @@ void TurbulentViscosityStencil::apply(FlowField &flowField, int i, int j, int k)
         //length in x direction
         FLOAT x=_parameters.meshsize->getPosX(i,j,k) + _parameters.meshsize->getDx(i, j, k) / 2;
         //Boundary layer thickness for turbulent boundary layer
-        delta=0.382*x/std::pow(_parameters.flow.Re*x/_parameters.geometry.lengthX,0.2);
+        delta=4.91*x/std::sqrt(_parameters.flow.Re*x/_parameters.geometry.lengthX);
 
         FLOAT &viscosity = flowField.getTurbulentViscosity().getScalar(i, j, k);
         FLOAT kappa = _parameters.turbulence.kappa;
