@@ -195,10 +195,6 @@ public:
     /** plots the flow field. */
     virtual void plotVTK(int timeStep)
     {
-        // Skip output when timestep equals zero
-        if(timeStep == 0.0)
-            return;
-
         // iterate stencil over _flowField
         _vtkIterator.iterate();
         // write flow field information to vtk file
