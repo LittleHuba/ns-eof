@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
 for i in range(1,5):
 	with open("conf_channel_weak_" + str(i) + "x" + str(i) + "x" + str(i) + ".xml", "w") as f:
-		geo ="     <geometry dim=\"{}\" lengthX=\"5.0\" lengthY=\"1.0\" lengthZ=\"1.0\" sizeX=\"{}\" sizeY=\"{}\" sizeZ=\"{}\">\n".format(dim, i*20, i*40, i*10)
+		geo ="     <geometry dim=\"{}\" lengthX=\"5.0\" lengthY=\"1.0\" lengthZ=\"1.0\" sizeX=\"{}\" sizeY=\"{}\" sizeZ=\"{}\">\n".format(dim, i*200, i*400, i*200)
 		par ="     <parallel numProcessorsX=\"{}\" numProcessorsY=\"{}\" numProcessorsZ=\"{}\" />\n".format(i,2*i,i)
 
 		f.write(top+geo+mid+par+bot)
@@ -23,7 +23,7 @@ for i in range(1,5):
 dim = 2
 for i in range(1,10):
 	with open("conf_channel_weak_" + str(i) + "x" + str(i) + ".xml", "w") as f:
-		geo ="     <geometry dim=\"{}\" lengthX=\"5.0\" lengthY=\"1.0\" lengthZ=\"1.0\" sizeX=\"{}\" sizeY=\"{}\" sizeZ=\"{}\">\n".format(dim, i*20, i*40, 1)
+		geo ="     <geometry dim=\"{}\" lengthX=\"5.0\" lengthY=\"1.0\" lengthZ=\"1.0\" sizeX=\"{}\" sizeY=\"{}\" sizeZ=\"{}\">\n".format(dim, i*200, i*400, 1)
 		par ="     <parallel numProcessorsX=\"{}\" numProcessorsY=\"{}\" numProcessorsZ=\"{}\" />\n".format(i,2*i,1)
 
 		f.write(top+geo+mid+par+bot)
@@ -43,24 +43,24 @@ end  = "done"
 
 for i in range(1,5):
 	with open("conf_channel_weak_" + str(i) + "x" + str(i) + "x" + str(i) + ".job", "w") as f:
-		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Weak_{0}x{0}x{0}.out\n#SBATCH -J weak_{0}x{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i*i)
+		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Weak_{0}x{0}x{0}.out\n#SBATCH -J channel_weak_{0}x{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i*i)
 		file = "    time mpiexec -np {} ./ns ".format(i*2*i*i) + "../config/conf_channel_weak_" + str(i) + "x" + str(i) + "x" + str(i) + ".xml\n"
 		f.write(top+outName+mid+mid2+file+end)
 
 for i in range(1,5):
 	with open("conf_channel_strong_" + str(i) + "x" + str(i) + "x" + str(i) + ".job", "w") as f:
-		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Strong_{0}x{0}x{0}.out\n#SBATCH -J strong_{0}x{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i*i)
+		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Strong_{0}x{0}x{0}.out\n#SBATCH -J channel_strong_{0}x{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i*i)
 		file = "    time mpiexec -np {} ./ns ".format(i*2*i*i) + "../config/conf_channel_strong_" + str(i) + "x" + str(i) + "x" + str(i) + ".xml\n"
 		f.write(top+outName+mid+mid2+file+end)
 
 for i in range(1,9):
 	with open("conf_channel_weak_" + str(i) + "x" + str(i) + ".job", "w") as f:
-		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Weak_{0}x{0}.out\n#SBATCH -J weak_{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i)
+		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Weak_{0}x{0}.out\n#SBATCH -J channel_weak_{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i)
 		file = "    time mpiexec -np {} ./ns ".format(i*i*2) + "../config/conf_channel_weak_" + str(i) + "x" + str(i) + ".xml\n"
 		f.write(top+outName+mid+mid2+file+end)
 
 for i in range(1,6):
 	with open("conf_channel_strong_" + str(i) + "x" + str(i) + ".job", "w") as f:
-		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Strong_{0}x{0}.out\n#SBATCH -J strong_{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i)
+		outName = "#SBATCH -o /home/hpc/t1221/lu26xut/parallel/output/channel_Strong_{0}x{0}.out\n#SBATCH -J channel_strong_{0}x{0} #name shown in squeue\n#SBATCH --ntasks={1}\n".format(i, i*i)
 		file = "    time mpiexec -np {} ./ns ".format(i*i*2) + "../config/conf_channel_strong_" + str(i) + "x" + str(i) + ".xml\n"
 		f.write(top+outName+mid+mid2+file+end)
