@@ -304,6 +304,19 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
         readStringMandatory(parameters.vtk.prefix, node);
 
         //--------------------------------------------------
+        // XDMF parameters
+        //--------------------------------------------------
+
+        node = confFile.FirstChildElement()->FirstChildElement("xdmf");
+
+        if (node == NULL){
+            handleError(1, "Error loading XDMF parameters");
+        }
+
+        readFloatOptional(parameters.xdmf.interval, node, "interval");
+        readStringMandatory(parameters.xdmf.prefix, node);
+
+        //--------------------------------------------------
         // StdOut parameters
         //--------------------------------------------------
 
@@ -459,9 +472,11 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
     MPI_Bcast(&(parameters.simulation.finalTime), 1, MY_MPI_FLOAT, 0, communicator);
 
     MPI_Bcast(&(parameters.vtk.interval), 1, MY_MPI_FLOAT, 0, communicator);
+    MPI_Bcast(&(parameters.xdmf.interval), 1, MY_MPI_FLOAT, 0, communicator);
     MPI_Bcast(&(parameters.stdOut.interval), 1, MPI_INT, 0, communicator);
 
     broadcastString (parameters.vtk.prefix, communicator);
+    broadcastString (parameters.xdmf.prefix, communicator);
     broadcastString (parameters.simulation.type, communicator);
     broadcastString (parameters.simulation.scenario, communicator);
 

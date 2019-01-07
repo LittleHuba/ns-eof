@@ -97,6 +97,12 @@ class VTKParameters{
         std::string prefix;   //! Output filename
 };
 
+class XDMFParameters{
+public:
+    FLOAT interval;     //! Time interval for file printing
+    std::string prefix;   //! Output filename
+};
+
 class StdOutParameters{
     public:
         FLOAT interval;
@@ -159,6 +165,7 @@ class Parameters {
         GeometricParameters     geometry;
         WallParameters          walls;
         VTKParameters           vtk;
+        XDMFParameters          xdmf;
         ParallelParameters      parallel;
         StdOutParameters        stdOut;
         BFStepParameters        bfStep;

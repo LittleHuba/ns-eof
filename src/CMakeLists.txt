@@ -59,12 +59,14 @@ add_library(ns-eof
         stencils/VelocityStencil.h
         stencils/VTKStencil.h
         stencils/VTKStencil.cpp
-	stencils/TurbulentViscosityStencil.h
-	stencils/TurbulentViscosityStencil.cpp
+		stencils/TurbulentViscosityStencil.h
+		stencils/TurbulentViscosityStencil.cpp
         stencils/ObstacleDistanceStencil.h
         stencils/ObstacleDistanceStencil.cpp
         stencils/WallDistanceStencil.h
         stencils/WallDistanceStencil.cpp
+		stencils/XDMFStencil.h
+		stencils/XDMFStencil.cpp
         stencils/communicationStencils/CommunicationStencil.cpp
 		stencils/communicationStencils/Direction.cpp
 		stencils/communicationStencils/PressureBufferFillStencil.cpp
