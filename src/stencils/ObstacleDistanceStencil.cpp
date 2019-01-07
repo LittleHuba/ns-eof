@@ -52,15 +52,15 @@ inline void ObstacleDistanceStencil::apply(FlowField &flowField, int i, int j) {
 
     // Take minimum of x distance
     wallDistance = std::fmin(wallDistance,
-                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j),
-                                     flowField.getNearestWallDistance().getScalar(i + 1, j))
+                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j) + _parameters.meshsize->getDx(i - 1, j) / 2.0,
+                                     flowField.getNearestWallDistance().getScalar(i + 1, j) + _parameters.meshsize->getDx(i + 1, j) / 2.0)
                             + _parameters.meshsize->getDx(i, j) / 2.0);
 
 
     // Take minimum of y distance
     wallDistance = std::fmin(wallDistance,
-                            std::fmin(flowField.getNearestWallDistance().getScalar(i, j - 1),
-                                     flowField.getNearestWallDistance().getScalar(i, j + 1))
+                            std::fmin(flowField.getNearestWallDistance().getScalar(i, j - 1) + _parameters.meshsize->getDy(i, j - 1) / 2.0,
+                                     flowField.getNearestWallDistance().getScalar(i, j + 1) + _parameters.meshsize->getDy(i, j + 1) / 2.0)
                             + _parameters.meshsize->getDy(i, j) / 2.0);
 
     // Take minimum of diagonal distance
@@ -133,37 +133,45 @@ inline void ObstacleDistanceStencil::apply(FlowField &flowField, int i, int j, i
 
     // Take minimum of x distance
     wallDistance = std::fmin(wallDistance,
-                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j, k),
-                                     flowField.getNearestWallDistance().getScalar(i + 1, j, k))
+                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j, k) + _parameters.meshsize->getDx(i - 1, j, k) / 2.0,
+                                     flowField.getNearestWallDistance().getScalar(i + 1, j, k) + _parameters.meshsize->getDx(i + 1, j, k) / 2.0)
                             + _parameters.meshsize->getDx(i, j, k) / 2.0);
 
 
     // Take minimum of y distance
     wallDistance = std::fmin(wallDistance,
-                            std::fmin(flowField.getNearestWallDistance().getScalar(i, j - 1, k),
-                                     flowField.getNearestWallDistance().getScalar(i, j + 1, k))
+                            std::fmin(flowField.getNearestWallDistance().getScalar(i, j - 1, k) + _parameters.meshsize->getDy(i, j - 1, k) / 2.0,
+                                     flowField.getNearestWallDistance().getScalar(i, j + 1, k) + _parameters.meshsize->getDy(i, j + 1, k) / 2.0)
                             + _parameters.meshsize->getDy(i, j, k) / 2.0);
 
     // Take minimum of z distance
     wallDistance = std::fmin(wallDistance,
-                            std::fmin(flowField.getNearestWallDistance().getScalar(i, j, k - 1),
-                                     flowField.getNearestWallDistance().getScalar(i, j, k + 1))
+                            std::fmin(flowField.getNearestWallDistance().getScalar(i, j, k - 1) + _parameters.meshsize->getDz(i, j, k - 1) / 2.0,
+                                     flowField.getNearestWallDistance().getScalar(i, j, k + 1) + _parameters.meshsize->getDz(i, j, k + 1) / 2.0)
                             + _parameters.meshsize->getDz(i, j, k) / 2.0);
 
     // Take minimum of diagonal distance
     wallDistance = std::fmin(wallDistance,
                             std::fmin(
                                     std::fmin(
-                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j - 1, k - 1),
-                                                     flowField.getNearestWallDistance().getScalar(i + 1, j - 1, k - 1)),
-                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j + 1, k - 1),
-                                                     flowField.getNearestWallDistance().getScalar(i + 1, j + 1, k - 1))
+                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j - 1, k - 1)
+                                            + std::hypot(std::hypot(_parameters.meshsize->getDx(i - 1, j - 1, k - 1), _parameters.meshsize->getDy(i - 1, j - 1, k - 1)), _parameters.meshsize->getDz(i - 1, j - 1, k - 1)) / 2.0,
+                                                     flowField.getNearestWallDistance().getScalar(i + 1, j - 1, k - 1)
+                                                     + std::hypot(std::hypot(_parameters.meshsize->getDx(i + 1, j - 1, k - 1), _parameters.meshsize->getDy(i + 1, j - 1, k - 1)), _parameters.meshsize->getDz(i + 1, j - 1, k - 1)) / 2.0),
+                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j + 1, k - 1)
+                                                      + std::hypot(std::hypot(_parameters.meshsize->getDx(i - 1, j + 1, k - 1), _parameters.meshsize->getDy(i - 1, j + 1, k - 1)), _parameters.meshsize->getDz(i - 1, j + 1, k - 1)) / 2.0,
+                                                     flowField.getNearestWallDistance().getScalar(i + 1, j + 1, k - 1)
+                                                     + std::hypot(std::hypot(_parameters.meshsize->getDx(i + 1, j + 1, k - 1), _parameters.meshsize->getDy(i + 1, j + 1, k - 1)), _parameters.meshsize->getDz(i + 1, j + 1, k - 1)) / 2.0)
                                     ),
                                     std::fmin(
-                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j - 1, k + 1),
-                                                     flowField.getNearestWallDistance().getScalar(i + 1, j - 1, k + 1)),
-                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j + 1, k + 1),
-                                                     flowField.getNearestWallDistance().getScalar(i + 1, j + 1, k + 1))
+                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j - 1, k + 1)
+                                                      + std::hypot(std::hypot(_parameters.meshsize->getDx(i - 1, j - 1, k + 1), _parameters.meshsize->getDy(i - 1, j - 1, k + 1)), _parameters.meshsize->getDz(i - 1, j - 1, k + 1)) / 2.0,
+                                                     flowField.getNearestWallDistance().getScalar(i + 1, j - 1, k + 1)
+                                                     + std::hypot(std::hypot(_parameters.meshsize->getDx(i + 1, j - 1, k + 1), _parameters.meshsize->getDy(i + 1, j - 1, k + 1)), _parameters.meshsize->getDz(i + 1, j - 1, k + 1)) / 2.0),
+                                            std::fmin(flowField.getNearestWallDistance().getScalar(i - 1, j + 1, k + 1)
+                                                      + std::hypot(std::hypot(_parameters.meshsize->getDx(i - 1, j + 1, k + 1), _parameters.meshsize->getDy(i - 1, j + 1, k + 1)), _parameters.meshsize->getDz(i - 1, j + 1, k + 1)) / 2.0,
+                                                     flowField.getNearestWallDistance().getScalar(i + 1, j + 1, k + 1)
+                                                     + std::hypot(std::hypot(_parameters.meshsize->getDx(i + 1, j + 1, k + 1), _parameters.meshsize->getDy(i + 1, j + 1, k + 1)), _parameters.meshsize->getDz(i + 1, j + 1, k + 1)) / 2.0)
                                     )
                             ) + std::hypot(std::hypot(_parameters.meshsize->getDx(i, j, k),
                                                       _parameters.meshsize->getDy(i, j, k)),
