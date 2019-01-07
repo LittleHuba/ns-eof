@@ -19,6 +19,8 @@ class XDMFStencil : public FieldStencil<FlowField> {
 protected:
     shared_ptr<XdmfHDF5WriterDSM> writer;
     shared_ptr<XdmfDomain> root;
+    shared_ptr<XdmfGridCollection> temporalGrid;
+
     shared_ptr<XdmfTopology> topology;
     shared_ptr<XdmfGeometry> geometry;
 

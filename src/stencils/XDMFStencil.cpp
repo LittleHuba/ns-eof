@@ -22,7 +22,7 @@ XDMFStencil::XDMFStencil(const Parameters &parameters) : FieldStencil(parameters
 
     root = XdmfDomain::New();
 
-    shared_ptr<XdmfGridCollection> temporalGrid = XdmfGridCollection::New();
+    temporalGrid = XdmfGridCollection::New();
     temporalGrid->setType(XdmfGridCollectionType::Temporal());
     root->insert(temporalGrid);
 
@@ -154,6 +154,8 @@ void XDMFStencil::write(int timeStep) {
     wallDistanceAttr->setName("wallDistance");
     wallDistanceAttr->insert(wallDistance);
     timestepGrid->insert(wallDistanceAttr);
+
+    temporalGrid->insert(timestepGrid);
 
     //Write
     root->accept(writer);
