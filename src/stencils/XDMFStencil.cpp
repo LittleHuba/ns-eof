@@ -50,6 +50,7 @@ XDMFStencil::XDMFStencil(const Parameters &parameters) : FieldStencil(parameters
     topology = grid->getTopology();
     geometry = grid->getGeometry();
 
+
     velocity->initialize<FLOAT>(cellsX * cellsY * cellsZ * 3);
     pressure->initialize<FLOAT>(cellsX * cellsY * cellsZ);
     viscosity->initialize<FLOAT>(cellsX * cellsY * cellsZ);
@@ -119,10 +120,13 @@ inline void XDMFStencil::apply(FlowField &flowField, int i, int j, int k) {
 }
 
 void XDMFStencil::write(int timeStep) {
+    auto cellsX = static_cast<const unsigned int>(_parameters.parallel.localSize[0]);
+    auto cellsY = static_cast<const unsigned int>(_parameters.parallel.localSize[1]);
+    const unsigned int cellsZ = (_parameters.geometry.dim == 3) ? static_cast<const unsigned int>(_parameters.parallel.localSize[2]) : 1;
 
     shared_ptr<XdmfUnstructuredGrid> timestepGrid = XdmfUnstructuredGrid::New();
-    timestepGrid->setGeometry(geometry);
-    timestepGrid->setTopology(topology);
+    timestepGrid->setGeometry(boost::const_pointer_cast<XdmfGeometry>(geometry));
+    timestepGrid->setTopology(boost::const_pointer_cast<XdmfTopology>(topology));
 
     //Add time
     shared_ptr<XdmfTime> time = XdmfTime::New(timeStep);
@@ -132,27 +136,27 @@ void XDMFStencil::write(int timeStep) {
     shared_ptr<XdmfAttribute> pressureAttr = XdmfAttribute::New();
     pressureAttr->setCenter(XdmfAttributeCenter::Cell());
     pressureAttr->setName("pressure");
-    pressureAttr->insert(pressure);
+    pressureAttr->insert(0, pressure, cellsX*cellsY*cellsZ,1,1);
     timestepGrid->insert(pressureAttr);
 
     shared_ptr<XdmfAttribute> velocityAttr = XdmfAttribute::New();
     velocityAttr->setCenter(XdmfAttributeCenter::Cell());
     velocityAttr->setName("velocity");
-    velocityAttr->insert(velocity);
+    velocityAttr->insert(0,velocity, cellsX*cellsY*cellsZ*3,1,1);
     velocityAttr->setType(XdmfAttributeType::Vector());
-    velocityAttr->setElementDegree(3);
+//    velocityAttr->setElementDegree(3);
     timestepGrid->insert(velocityAttr);
 
     shared_ptr<XdmfAttribute> viscosityAttr = XdmfAttribute::New();
     viscosityAttr->setCenter(XdmfAttributeCenter::Cell());
     viscosityAttr->setName("viscosity");
-    viscosityAttr->insert(viscosity);
+    viscosityAttr->insert(0, viscosity, cellsX*cellsY*cellsZ,1,1);
     timestepGrid->insert(viscosityAttr);
 
     shared_ptr<XdmfAttribute> wallDistanceAttr = XdmfAttribute::New();
     wallDistanceAttr->setCenter(XdmfAttributeCenter::Cell());
     wallDistanceAttr->setName("wallDistance");
-    wallDistanceAttr->insert(wallDistance);
+    wallDistanceAttr->insert(0, wallDistance, cellsX*cellsY*cellsZ,1,1);
     timestepGrid->insert(wallDistanceAttr);
 
     temporalGrid->insert(timestepGrid);

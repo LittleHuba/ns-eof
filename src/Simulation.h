@@ -6,6 +6,7 @@
 #include <mpi.h>
 #include <iomanip>  
 #include <parallelManagers/PetscParallelManager.h>
+#include <stencils/XDMFStencil.h>
 #include "FlowField.h"
 #include "stencils/FGHStencil.h"
 #include "stencils/MovingWallStencils.h"
@@ -59,6 +60,8 @@ protected:
     
     // Create VTKStencil and respective iterator
     VTKStencil _vtkStencil;
+    XDMFStencil _xdmfStencil;
+    FieldIterator<FlowField> _xdmfIterator;
     FieldIterator<FlowField> _vtkIterator;
     
     // Parallel manager
@@ -84,7 +87,9 @@ public:
             _obstacleStencil(parameters),
             _velocityIterator(_flowField, parameters, _velocityStencil),
             _obstacleIterator(_flowField, parameters, _obstacleStencil),
+            _xdmfStencil(parameters),
             _vtkStencil(parameters),
+            _xdmfIterator(_flowField, parameters, _xdmfStencil, 1),
             _vtkIterator(_flowField, parameters, _vtkStencil, 1),
             _parallelManager(parameters, _flowField),
             _solver(_flowField, parameters)
@@ -197,7 +202,9 @@ public:
     {
         // iterate stencil over _flowField
         _vtkIterator.iterate();
+        _xdmfIterator.iterate();
         // write flow field information to vtk file
+        _xdmfStencil.write(timeStep);
         _vtkStencil.write(timeStep);
     }
 

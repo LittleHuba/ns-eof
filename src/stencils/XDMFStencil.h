@@ -1,5 +1,5 @@
-#ifndef _VTK_STENCIL_H_
-#define _VTK_STENCIL_H_
+#ifndef _XDMF_STENCIL_H_
+#define _XDMF_STENCIL_H_
 
 #include "../Definitions.h"
 #include "../Parameters.h"
@@ -21,8 +21,8 @@ protected:
     shared_ptr<XdmfDomain> root;
     shared_ptr<XdmfGridCollection> temporalGrid;
 
-    shared_ptr<XdmfTopology> topology;
-    shared_ptr<XdmfGeometry> geometry;
+    shared_ptr<const XdmfTopology> topology;
+    shared_ptr<const XdmfGeometry> geometry;
 
     shared_ptr<XdmfArray> velocity;
     shared_ptr<XdmfArray> pressure;
