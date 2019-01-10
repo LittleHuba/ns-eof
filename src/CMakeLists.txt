@@ -1,4 +1,5 @@
 find_package(PETSc COMPONENTS CXX)
+find_package(LibXml2 REQUIRED)
 
 include_directories(.)
 include_directories(3rdparty/tinyxml2)
@@ -6,6 +7,7 @@ include_directories(parallelManagers)
 include_directories(solvers)
 include_directories(stencils)
 include_directories(${PETSC_INCLUDES})
+include_directories(${LIBXML2_INCLUDE_DIR})
 
 add_definitions(${PETSC_DEFINITIONS})
 
