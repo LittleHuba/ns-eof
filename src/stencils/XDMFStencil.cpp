@@ -1,4 +1,3 @@
-#include <XdmfHDF5ControllerDSM.hpp>
 #include "XDMFStencil.h"
 
 XDMFStencil::XDMFStencil(const Parameters &parameters) : FieldStencil(parameters) {

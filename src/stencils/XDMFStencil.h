@@ -10,6 +10,7 @@
 #include <XdmfDomain.hpp>
 #include <XdmfGridCollection.hpp>
 #include <XdmfHDF5WriterDSM.hpp>
+#include <XdmfHDF5ControllerDSM.hpp>
 
 /** Stencil for writing VTK files
  *
