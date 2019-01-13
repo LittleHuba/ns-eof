@@ -7,10 +7,9 @@
 #include "../FlowField.h"
 #include <string>
 #include <mpi.h>
-#include <XdmfDomain.hpp>
-#include <XdmfGridCollection.hpp>
-#include <XdmfHDF5WriterDSM.hpp>
-#include <XdmfHDF5ControllerDSM.hpp>
+#include <hdf5.h>
+#include <vector>
+#include <fstream>
 
 /** Stencil for writing VTK files
  *
@@ -18,17 +17,18 @@
  */
 class XDMFStencil : public FieldStencil<FlowField> {
 protected:
-    shared_ptr<XdmfHDF5WriterDSM> writer;
-    shared_ptr<XdmfDomain> root;
-    shared_ptr<XdmfGridCollection> temporalGrid;
+    hid_t file_id;
+    hid_t dxpl_id;
+    std::ofstream xdmfFile;
+    std::vector<FLOAT> velocity;
+    std::vector<FLOAT> pressure;
+    std::vector<FLOAT> viscosity;
 
-    shared_ptr<const XdmfTopology> topology;
-    shared_ptr<const XdmfGeometry> geometry;
-
-    shared_ptr<XdmfArray> velocity;
-    shared_ptr<XdmfArray> pressure;
-    shared_ptr<XdmfArray> viscosity;
-    shared_ptr<XdmfArray> wallDistance;
+    unsigned long allPoints;
+    unsigned long previousPoints;
+    unsigned long cells;
+    unsigned long allCells;
+    unsigned long previousCells;
 
 
 public:
@@ -37,9 +37,7 @@ public:
      *
      * @param prefix String with the prefix of the name of the VTK files
      */
-    explicit XDMFStencil(const Parameters &parameters);
-
-    ~XDMFStencil() override;
+    explicit XDMFStencil(FlowField &flowField, const Parameters &parameters);
 
     /** 2D operation for one position
      *

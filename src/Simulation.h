@@ -87,7 +87,7 @@ public:
             _obstacleStencil(parameters),
             _velocityIterator(_flowField, parameters, _velocityStencil),
             _obstacleIterator(_flowField, parameters, _obstacleStencil),
-            _xdmfStencil(parameters),
+            _xdmfStencil(_flowField, parameters),
             _vtkStencil(parameters),
             _xdmfIterator(_flowField, parameters, _xdmfStencil, 1),
             _vtkIterator(_flowField, parameters, _vtkStencil, 1),
@@ -202,10 +202,17 @@ public:
     {
         // iterate stencil over _flowField
         _vtkIterator.iterate();
+        // write flow field information to vtk file
+        _vtkStencil.write(timeStep);
+    }
+
+    /** plots the flow field. */
+    virtual void plotXDMF(int timeStep)
+    {
+        // iterate stencil over _flowField
         _xdmfIterator.iterate();
         // write flow field information to vtk file
         _xdmfStencil.write(timeStep);
-        _vtkStencil.write(timeStep);
     }
 
 protected:

@@ -66,10 +66,14 @@ int main(int argc, char *argv[]) {
     FLOAT time = 0.0;
     FLOAT timeStdOut = parameters.stdOut.interval;
     FLOAT timeVTKOut = parameters.vtk.interval;
+    FLOAT timeXDMFOut = parameters.xdmf.interval;
+    int xdmfTimestep = 0;
     int timeSteps = 0;
 
     // plot initial state
     simulation->plotVTK(timeSteps);
+    simulation->plotXDMF(xdmfTimestep);
+    xdmfTimestep++;
 
     // time loop
     while (time < parameters.simulation.finalTime) {
@@ -91,10 +95,20 @@ int main(int argc, char *argv[]) {
             simulation->plotVTK(timeSteps);
             timeVTKOut += parameters.vtk.interval;
         }
+
+        if (timeXDMFOut <= time) {
+            simulation->plotXDMF(xdmfTimestep);
+            timeXDMFOut += parameters.xdmf.interval;
+            xdmfTimestep++;
+        }
+
+        PetscFinalize();
+        exit(0);
     }
 
     // plot final output
     simulation->plotVTK(timeSteps);
+    simulation->plotXDMF(xdmfTimestep);
 
     delete simulation;
     simulation = nullptr;

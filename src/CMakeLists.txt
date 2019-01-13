@@ -1,6 +1,6 @@
 find_package(PETSc COMPONENTS CXX)
 find_package(LibXml2 REQUIRED)
-#find_package(NetCDF REQUIRED)
+find_package(HDF5 REQUIRED)
 
 include_directories(.)
 include_directories(3rdparty/tinyxml2)
@@ -9,8 +9,7 @@ include_directories(solvers)
 include_directories(stencils)
 include_directories(${PETSC_INCLUDES})
 include_directories(${LIBXML2_INCLUDE_DIR})
-
-link_directories(/usr/lib/x86_64-linux-gnu/xdmf/openmpi) # Install location for packaged libxdmf3 in Ubuntu.
+include_directories(${HDF5_INCLUDE_DIRS})
 
 add_definitions(${PETSC_DEFINITIONS})
 
@@ -117,10 +116,10 @@ add_library(ns-eof
         stencils/communicationStencils/WallDistanceBufferReadStencil.cpp
         stencils/communicationStencils/WallDistanceBufferReadStencil.h)
 
-target_link_libraries(ns-eof ${PETSC_LIBRARIES})
+target_link_libraries(ns-eof ${PETSC_LIBRARIES} ${HDF5_LIBRARIES})
 
 add_executable(ns main.cpp)
-target_link_libraries(ns ns-eof Xdmf XdmfCore XdmfUtils)
+target_link_libraries(ns ns-eof)
 
 if (MPI_COMPILE_FLAGS)
     set_target_properties(ns PROPERTIES
