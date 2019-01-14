@@ -1,16 +1,62 @@
 #include "XDMFStencil.h"
 
 XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : FieldStencil(parameters) {
-
+    
     // Get some initial information about the grid
-    auto cellsX = static_cast<const unsigned int>(parameters.parallel.localSize[0]);
-    auto cellsY = static_cast<const unsigned int>(parameters.parallel.localSize[1]);
-    const unsigned int cellsZ = (_parameters.geometry.dim == 3) ? static_cast<const unsigned int>(parameters.parallel.localSize[2]) : 0;
-
-    const unsigned int pointsX = cellsX + 1;
-    const unsigned int pointsY = cellsY + 1;
-    const unsigned int pointsZ = cellsZ + 1;
-
+    cellsX = static_cast<const unsigned int>(parameters.parallel.localSize[0]);
+    cellsY = static_cast<const unsigned int>(parameters.parallel.localSize[1]);
+    cellsZ = (_parameters.geometry.dim == 3) ? static_cast<const unsigned int>(parameters.parallel.localSize[2]) : 0;
+    
+    int firstCornerX = _parameters.parallel.firstCorner[0];
+    int firstCornerY = _parameters.parallel.firstCorner[1];
+    int firstCornerZ = _parameters.parallel.firstCorner[2];
+    bool isLeft = firstCornerX == 0;
+    bool isBottom = firstCornerY == 0;
+    bool isFront = firstCornerZ == 0;
+    
+    unsigned int pointsX;
+    unsigned int pointsY;
+    unsigned int pointsZ;
+    unsigned int iStart;
+    unsigned int jStart;
+    unsigned int kStart;
+    if (isLeft)
+    {
+        pointsX = cellsX + 1;
+        iStart = 2;
+    }
+    else
+    {
+        pointsX = cellsX;
+        iStart = 3;
+    }
+    
+    if (isBottom)
+    {
+        pointsY = cellsY + 1;
+        jStart = 2;
+    }
+    else
+    {
+        pointsY = cellsY;
+        jStart = 3;
+    }
+    
+    if (isFront)
+    {
+        pointsZ = cellsZ + 1;
+        kStart = 2;
+    }
+    else
+    {
+        pointsZ = cellsZ;
+        kStart = 3;
+    }
+    
+    allPointsX = _parameters.geometry.sizeX + 1;
+    allPointsY = _parameters.geometry.sizeY + 1;
+    allPointsZ = _parameters.geometry.sizeZ + 1;
+    
     unsigned long points = pointsX * pointsY * pointsZ;
     MPI_Allreduce(&points, &allPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     MPI_Scan(&points, &previousPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
@@ -37,115 +83,209 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     //get information needed to open datasets in collective mpi mode
     dxpl_id = H5Pcreate(H5P_DATASET_XFER);
     H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_COLLECTIVE);
-
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //write geometry
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //create dataspace and dataset
-    hsize_t geo_dims[2] = {static_cast<hsize_t>(allPoints), 3};
-    hid_t geo_dataspace_id = H5Screate_simple(2, geo_dims, nullptr);
-    hid_t geo_dataset_id = H5Dcreate(file_id, "geometry", H5T_NATIVE_FLOAT, geo_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-    //select hyperslab of the dataspace
-    hsize_t geo_start[2] = {(hsize_t) previousPoints, 0};
-    hsize_t geo_count[2] = {pointsX * pointsY * pointsZ, 3};
-    H5Sselect_hyperslab(geo_dataspace_id, H5S_SELECT_SET, geo_start, nullptr, geo_count, nullptr);
-
-    //create a hyperslab selection of the vector in the memory
-    hsize_t geo_memspace_dims[2] = {(hsize_t) pointsX * pointsY * pointsZ * 3, 1};
-    hid_t geo_memspace = H5Screate_simple(2, geo_memspace_dims, nullptr);
-    hsize_t geo_memory_start[2] = {0, 0};
-    hsize_t geo_memory_count[2] = {(hsize_t) pointsX * pointsY * pointsZ * 3, 1};
-    H5Sselect_hyperslab(geo_memspace, H5S_SELECT_SET, geo_memory_start, nullptr, geo_memory_count, nullptr);
-
-    std::vector<FLOAT> geometry = std::vector<FLOAT>();
-    geometry.reserve(points);
-    if (parameters.geometry.dim == 2)
-        for (unsigned int j = 2; j < cellsY + 2; j++) {
-            for (unsigned int i = 2; i < cellsX + 2; i++) {
-                geometry.push_back(_parameters.meshsize->getPosX(i, j));
-                geometry.push_back(_parameters.meshsize->getPosY(i, j));
-                geometry.push_back(0);
-            }
-        }
-    else
-        for (unsigned int k = 2; k < cellsZ + 3; k++) {
-            for (unsigned int j = 2; j < cellsY + 3; j++) {
-                for (unsigned int i = 2; i < cellsX + 3; i++) {
-                    geometry.push_back(_parameters.meshsize->getPosX(i, j, k));
-                    geometry.push_back(_parameters.meshsize->getPosY(i, j, k));
-                    geometry.push_back(_parameters.meshsize->getPosZ(i, j, k));
-                }
-            }
-        }
-
-    //write vector to dataset
-    //TODO we might have to take into account that we do not use float but double as datatype
-    H5Dwrite(geo_dataset_id, H5T_NATIVE_FLOAT, geo_memspace, geo_dataspace_id, dxpl_id, geometry.data());
-
-    //close dataset and dataspaces
-    H5Dclose(geo_dataset_id);
-    H5Sclose(geo_dataspace_id);
-    H5Sclose(geo_memspace);
+    
+    int rank = _parameters.parallel.rank;
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //write topology
+    //write geometry X
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    std::cout << "[Rank=" << rank << "] "
+              << "allPointsX=" << allPointsX
+              << ", firstCornerX=" << firstCornerX + static_cast<int>(!isLeft)
+              << ", pointsX=" << pointsX
+              << std::endl;
+    
     //create dataspace and dataset
-    hsize_t topo_dims[2] = {allCells, 4};
-    hid_t topo_dataspace_id = H5Screate_simple(2, topo_dims, nullptr);
-    hid_t topo_dataset_id = H5Dcreate(file_id, "topology", H5T_NATIVE_ULONG, topo_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    hsize_t geoX_dims[2] = {static_cast<hsize_t>(allPointsX), 1};
+    hid_t geoX_dataspace_id = H5Screate_simple(2, geoX_dims, nullptr);
+//    sizeof(FLOAT) == sizeof(double)
+    hid_t geoX_dataset_id = H5Dcreate(file_id, "geometryX", H5T_NATIVE_DOUBLE, geoX_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t topo_start[2] = {(hsize_t) previousCells, 0};
-    hsize_t topo_count[2] = {(hsize_t) cells, 4};
-    H5Sselect_hyperslab(topo_dataspace_id, H5S_SELECT_SET, topo_start, nullptr, topo_count, nullptr);
+    hsize_t geoX_start[2] = {(hsize_t) (firstCornerX + static_cast<int>(!isLeft)), 0}; // The "+1" here is because the leftmost block covers 1 extra point.
+    hsize_t geoX_count[2] = {pointsX, 1};
+    H5Sselect_hyperslab(geoX_dataspace_id, H5S_SELECT_SET, geoX_start, nullptr, geoX_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
-    hsize_t topo_memspace_dims[2] = {(hsize_t) cells * 4, 1};
-    hid_t topo_memspace = H5Screate_simple(2, topo_memspace_dims, nullptr);
-    hsize_t topo_memory_start[2] = {0, 0};
-    hsize_t topo_memory_count[2] = {(hsize_t) cells * 4, 1};
-    H5Sselect_hyperslab(topo_memspace, H5S_SELECT_SET, topo_memory_start, nullptr, topo_memory_count, nullptr);
+    hsize_t geoX_memspace_dims[2] = {(hsize_t) pointsX, 1};
+    hid_t geoX_memspace = H5Screate_simple(2, geoX_memspace_dims, nullptr);
+    hsize_t geoX_memory_start[2] = {0, 0};
+    hsize_t geoX_memory_count[2] = {(hsize_t) pointsX, 1};
+    H5Sselect_hyperslab(geoX_memspace, H5S_SELECT_SET, geoX_memory_start, nullptr, geoX_memory_count, nullptr);
 
-    //TODO check if this algorithm is right...
-    std::vector<FLOAT> topology = std::vector<FLOAT>();
-    if (parameters.geometry.dim == 2) {
-        topology.reserve(cells* 4);
-        for (unsigned int j = 0; j < cellsY + 2; j++) {
-            for (unsigned int i = 0; i < cellsX + 2; i++) {
-                topology.push_back(j * i);
-                topology.push_back(j * (i + 1));
-                topology.push_back((j + 1) * (i + 1));
-                topology.push_back((j + 1) * i);
-            }
-        }
-    } else {
-        topology.reserve(cells* 8);
-        for (unsigned int k = 2; k < cellsZ + 2; k++) {
-            for (unsigned int j = 2; j < cellsY + 2; j++) {
-                for (unsigned int i = 2; i < cellsX + 2; i++) {
-                    topology.push_back(k * j * i);
-                    topology.push_back(k * j * (i + 1));
-                    topology.push_back(k * (j + 1) * (i + 1));
-                    topology.push_back(k * (j + 1) * i);
-                    topology.push_back((k + 1) * j * i);
-                    topology.push_back((k + 1) * j * (i + 1));
-                    topology.push_back((k + 1) * (j + 1) * (i + 1));
-                    topology.push_back((k + 1) * (j + 1) * i);
-                }
-            }
-        }
+    std::vector<FLOAT> geometryX = std::vector<FLOAT>();
+    geometryX.reserve(pointsX);
+    for (unsigned int i = iStart; i < cellsX + 3; ++i)
+    {
+        geometryX.push_back(_parameters.meshsize->getPosX(i, 0));
     }
-
+    
     //write vector to dataset
-    H5Dwrite(topo_dataset_id, H5T_NATIVE_ULONG, topo_memspace, topo_dataspace_id, dxpl_id, topology.data());
-
+    //TODO we might have to take into account that we do not use float but double as datatype
+    H5Dwrite(geoX_dataset_id, H5T_NATIVE_DOUBLE, geoX_memspace, geoX_dataspace_id, dxpl_id, geometryX.data());
+    
     //close dataset and dataspaces
-    H5Dclose(topo_dataset_id);
-    H5Sclose(topo_dataspace_id);
-    H5Sclose(topo_memspace);
+    H5Dclose(geoX_dataset_id);
+    H5Sclose(geoX_dataspace_id);
+    H5Sclose(geoX_memspace);
+    
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //write geometry Y
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    std::cout << "[Rank=" << rank << "] "
+              << "allPointsY=" << allPointsY
+              << ", firstCornerX=" << firstCornerX + static_cast<int>(!isBottom)
+              << ", pointsY=" << pointsY
+              << std::endl;
+    
+    //create dataspace and dataset
+    hsize_t geoY_dims[2] = {static_cast<hsize_t>(allPointsY), 1};
+    hid_t geoY_dataspace_id = H5Screate_simple(2, geoY_dims, nullptr);
+//    sizeof(FLOAT) == sizeof(double)
+    hid_t geoY_dataset_id = H5Dcreate(file_id, "geometryY", H5T_NATIVE_DOUBLE, geoY_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    
+    //select hyperslab of the dataspace
+    hsize_t geoY_start[2] = {(hsize_t) (firstCornerY + static_cast<int>(!isBottom)), 0}; // The "+1" here is because the leftmost block covers 1 extra point.
+    hsize_t geoY_count[2] = {pointsY, 1};
+    H5Sselect_hyperslab(geoY_dataspace_id, H5S_SELECT_SET, geoY_start, nullptr, geoY_count, nullptr);
+    
+    //create a hyperslab selection of the vector in the memory
+    hsize_t geoY_memspace_dims[2] = {(hsize_t) pointsY, 1};
+    hid_t geoY_memspace = H5Screate_simple(2, geoY_memspace_dims, nullptr);
+    hsize_t geoY_memory_start[2] = {0, 0};
+    hsize_t geoY_memory_count[2] = {(hsize_t) pointsY, 1};
+    H5Sselect_hyperslab(geoY_memspace, H5S_SELECT_SET, geoY_memory_start, nullptr, geoY_memory_count, nullptr);
+    
+    std::vector<FLOAT> geometryY = std::vector<FLOAT>();
+    geometryY.reserve(pointsY);
+    for (unsigned int j = jStart; j < cellsY + 3; ++j)
+    {
+        geometryY.push_back(_parameters.meshsize->getPosY(0, j));
+    }
+    
+    //write vector to dataset
+    //TODO we might have to take into account that we do not use float but double as datatype
+    H5Dwrite(geoY_dataset_id, H5T_NATIVE_DOUBLE, geoY_memspace, geoY_dataspace_id, dxpl_id, geometryY.data());
+    
+    //close dataset and dataspaces
+    H5Dclose(geoY_dataset_id);
+    H5Sclose(geoY_dataspace_id);
+    H5Sclose(geoY_memspace);
+    
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //write geometry Z
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (parameters.geometry.dim == 3)
+    {
+        std::cout << "[Rank=" << rank << "] "
+                  << "allPointsZ=" << allPointsZ
+                  << ", firstCornerZ=" << firstCornerZ + static_cast<int>(!isFront)
+                  << ", pointsZ=" << pointsZ
+                  << std::endl;
+    
+        //create dataspace and dataset
+        hsize_t geoZ_dims[2] = {static_cast<hsize_t>(allPointsZ), 1};
+        hid_t geoZ_dataspace_id = H5Screate_simple(2, geoZ_dims, nullptr);
+//    sizeof(FLOAT) == sizeof(double)
+        hid_t geoZ_dataset_id = H5Dcreate(file_id, "geometryZ", H5T_NATIVE_DOUBLE, geoZ_dataspace_id, H5P_DEFAULT,
+                                          H5P_DEFAULT, H5P_DEFAULT);
+    
+        //select hyperslab of the dataspace
+        hsize_t geoZ_start[2] = {(hsize_t) (firstCornerZ + static_cast<int>(!isFront)),
+                                 0}; // The "+1" here is because the leftmost block covers 1 extra point.
+        hsize_t geoZ_count[2] = {pointsZ, 1};
+        H5Sselect_hyperslab(geoZ_dataspace_id, H5S_SELECT_SET, geoZ_start, nullptr, geoZ_count, nullptr);
+    
+        //create a hyperslab selection of the vector in the memory
+        hsize_t geoZ_memspace_dims[2] = {(hsize_t) pointsZ, 1};
+        hid_t geoZ_memspace = H5Screate_simple(2, geoZ_memspace_dims, nullptr);
+        hsize_t geoZ_memory_start[2] = {0, 0};
+        hsize_t geoZ_memory_count[2] = {(hsize_t) pointsZ, 1};
+        H5Sselect_hyperslab(geoZ_memspace, H5S_SELECT_SET, geoZ_memory_start, nullptr, geoZ_memory_count, nullptr);
+    
+        std::vector<FLOAT> geometryZ = std::vector<FLOAT>();
+        geometryZ.reserve(pointsZ);
+        for (unsigned int k = kStart; k < cellsZ + 3; ++k)
+        {
+            geometryZ.push_back(_parameters.meshsize->getPosZ(0, 0, k));
+        }
+    
+        //write vector to dataset
+        //TODO we might have to take into account that we do not use float but double as datatype
+        H5Dwrite(geoZ_dataset_id, H5T_NATIVE_DOUBLE, geoZ_memspace, geoZ_dataspace_id, dxpl_id, geometryZ.data());
+    
+        //close dataset and dataspaces
+        H5Dclose(geoZ_dataset_id);
+        H5Sclose(geoZ_dataspace_id);
+        H5Sclose(geoZ_memspace);
+    }
+    
+    
+//    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//    //write topology
+//    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//    //create dataspace and dataset
+//    hsize_t topo_dims[2] = {allCells, 4};
+//    hid_t topo_dataspace_id = H5Screate_simple(2, topo_dims, nullptr);
+//    hid_t topo_dataset_id = H5Dcreate(file_id, "topology", H5T_NATIVE_ULONG, topo_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+//
+//    //select hyperslab of the dataspace
+//    hsize_t topo_start[2] = {(hsize_t) previousCells, 0};
+//    hsize_t topo_count[2] = {(hsize_t) cells, 4};
+//    H5Sselect_hyperslab(topo_dataspace_id, H5S_SELECT_SET, topo_start, nullptr, topo_count, nullptr);
+//
+//    //create a hyperslab selection of the vector in the memory
+//    hsize_t topo_memspace_dims[2] = {(hsize_t) cells * 4, 1};
+//    hid_t topo_memspace = H5Screate_simple(2, topo_memspace_dims, nullptr);
+//    hsize_t topo_memory_start[2] = {0, 0};
+//    hsize_t topo_memory_count[2] = {(hsize_t) cells * 4, 1};
+//    H5Sselect_hyperslab(topo_memspace, H5S_SELECT_SET, topo_memory_start, nullptr, topo_memory_count, nullptr);
+//
+//    //TODO check if this algorithm is right...
+//    std::vector<unsigned long> topology = std::vector<unsigned long>();
+//    if (parameters.geometry.dim == 2) {
+//        topology.reserve(cells * 4);
+//        unsigned int Xbase = _parameters.parallel.firstCorner[0];
+//        unsigned int Ybase = _parameters.parallel.firstCorner[1];
+//        for (unsigned int j = Xbase; j < cellsY + 2; j++) {
+//            for (unsigned int i = Ybase; i < cellsX + 2; i++) {
+//                topology.push_back(j * i);
+//                topology.push_back(j * (i + 1));
+//                topology.push_back((j + 1) * (i + 1));
+//                topology.push_back((j + 1) * i);
+//            }
+//        }
+//    } else {
+//        topology.reserve(cells * 8);
+//        int Xbase = _parameters.parallel.firstCorner[0];
+//        int Ybase = _parameters.parallel.firstCorner[1];
+//        int Zbase = _parameters.parallel.firstCorner[2];
+//        int numXcells = _parameters.parallel.localSize[0];
+//        int numYcells = _parameters.parallel.localSize[1];
+//        int numZcells = _parameters.parallel.localSize[2];
+//        for (unsigned int k = 2; k < cellsZ + 2; k++) {
+//            for (unsigned int j = 2; j < cellsY + 2; j++) {
+//                for (unsigned int i = 2; i < cellsX + 2; i++) {
+//                    topology.push_back(k * j * i);
+//                    topology.push_back(k * j * (i + 1));
+//                    topology.push_back(k * (j + 1) * (i + 1));
+//                    topology.push_back(k * (j + 1) * i);
+//                    topology.push_back((k + 1) * j * i);
+//                    topology.push_back((k + 1) * j * (i + 1));
+//                    topology.push_back((k + 1) * (j + 1) * (i + 1));
+//                    topology.push_back((k + 1) * (j + 1) * i);
+//                }
+//            }
+//        }
+//    }
+//
+//    //write vector to dataset
+//    H5Dwrite(topo_dataset_id, H5T_NATIVE_ULONG, topo_memspace, topo_dataspace_id, dxpl_id, topology.data());
+//
+//    //close dataset and dataspaces
+//    H5Dclose(topo_dataset_id);
+//    H5Sclose(topo_dataspace_id);
+//    H5Sclose(topo_memspace);
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //write wallDistance
@@ -153,7 +293,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     //create dataspace and dataset
     hsize_t wd_dims[2] = {allCells, 1};
     hid_t wd_dataspace_id = H5Screate_simple(2, wd_dims, nullptr);
-    hid_t wd_dataset_id = H5Dcreate(file_id, "wallDistance", H5T_NATIVE_FLOAT, wd_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t wd_dataset_id = H5Dcreate(file_id, "wallDistance", H5T_NATIVE_DOUBLE, wd_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
     hsize_t wd_start[2] = {(hsize_t) previousCells, 0};
@@ -185,7 +325,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
         }
 
     //write vector to dataset
-    H5Dwrite(wd_dataset_id, H5T_NATIVE_ULONG, wd_memspace, wd_dataspace_id, dxpl_id, wallDistance.data());
+    H5Dwrite(wd_dataset_id, H5T_NATIVE_DOUBLE, wd_memspace, wd_dataspace_id, dxpl_id, wallDistance.data());
 
     //close dataset and dataspaces
     H5Dclose(wd_dataset_id);
@@ -256,7 +396,7 @@ void XDMFStencil::write(int timestep) {
     //create dataspace and dataset
     hsize_t vel_dims[2] = {allCells, 3};
     hid_t vel_dataspace_id = H5Screate_simple(2, vel_dims, nullptr);
-    hid_t vel_dataset_id = H5Dcreate(file_id, ("velocity" + std::to_string(timestep)).c_str(), H5T_NATIVE_FLOAT, vel_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t vel_dataset_id = H5Dcreate(file_id, ("velocity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, vel_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
     hsize_t vel_start[2] = {(hsize_t) previousCells, 0};
@@ -271,7 +411,7 @@ void XDMFStencil::write(int timestep) {
     H5Sselect_hyperslab(vel_memspace, H5S_SELECT_SET, vel_memory_start, nullptr, vel_memory_count, nullptr);
 
     //write vector to dataset
-    H5Dwrite(vel_dataset_id, H5T_NATIVE_ULONG, vel_memspace, vel_dataspace_id, dxpl_id, velocity.data());
+    H5Dwrite(vel_dataset_id, H5T_NATIVE_DOUBLE, vel_memspace, vel_dataspace_id, dxpl_id, velocity.data());
 
     //close dataset and dataspaces
     H5Dclose(vel_dataset_id);
@@ -284,7 +424,7 @@ void XDMFStencil::write(int timestep) {
     //create dataspace and dataset
     hsize_t p_dims[2] = {allCells, 1};
     hid_t p_dataspace_id = H5Screate_simple(2, p_dims, nullptr);
-    hid_t p_dataset_id = H5Dcreate(file_id, ("pressure" + std::to_string(timestep)).c_str(), H5T_NATIVE_FLOAT, p_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t p_dataset_id = H5Dcreate(file_id, ("pressure" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, p_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
     hsize_t p_start[2] = {(hsize_t) previousCells, 0};
@@ -299,7 +439,7 @@ void XDMFStencil::write(int timestep) {
     H5Sselect_hyperslab(p_memspace, H5S_SELECT_SET, p_memory_start, nullptr, p_memory_count, nullptr);
 
     //write vector to dataset
-    H5Dwrite(p_dataset_id, H5T_NATIVE_ULONG, p_memspace, p_dataspace_id, dxpl_id, pressure.data());
+    H5Dwrite(p_dataset_id, H5T_NATIVE_DOUBLE, p_memspace, p_dataspace_id, dxpl_id, pressure.data());
 
     //close dataset and dataspaces
     H5Dclose(p_dataset_id);
@@ -312,7 +452,7 @@ void XDMFStencil::write(int timestep) {
     //create dataspace and dataset
     hsize_t vc_dims[2] = {allCells, 1};
     hid_t vc_dataspace_id = H5Screate_simple(2, vc_dims, nullptr);
-    hid_t vc_dataset_id = H5Dcreate(file_id, ("viscosity" + std::to_string(timestep)).c_str(), H5T_NATIVE_FLOAT, vc_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    hid_t vc_dataset_id = H5Dcreate(file_id, ("viscosity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, vc_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
     hsize_t vc_start[2] = {(hsize_t) previousCells, 0};
@@ -327,7 +467,7 @@ void XDMFStencil::write(int timestep) {
     H5Sselect_hyperslab(vc_memspace, H5S_SELECT_SET, vc_memory_start, nullptr, vc_memory_count, nullptr);
 
     //write vector to dataset
-    H5Dwrite(vc_dataset_id, H5T_NATIVE_ULONG, vc_memspace, vc_dataspace_id, dxpl_id, viscosity.data());
+    H5Dwrite(vc_dataset_id, H5T_NATIVE_DOUBLE, vc_memspace, vc_dataspace_id, dxpl_id, viscosity.data());
 
     //close dataset and dataspaces
     H5Dclose(vc_dataset_id);
@@ -340,6 +480,23 @@ void XDMFStencil::write(int timestep) {
     if (_parameters.parallel.rank != 0)
         return;
     
+    std::string topologyType, numberOfElementsString;
+    std::string geometryZString;
+    if (_parameters.geometry.dim == 2)
+    {
+        topologyType = "2DRectMesh";
+        numberOfElementsString = std::to_string(allPointsX) + " " + std::to_string(allPointsY);
+        geometryZString = "";
+    }
+    else
+    {
+        topologyType = "3DRectMesh";
+        numberOfElementsString = std::to_string(allPointsX) + " " + std::to_string(allPointsY) + " " + std::to_string(allPointsZ);
+        geometryZString = "<DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" 
+                + std::to_string(allPointsZ) + "\">"
+                + _parameters.xdmf.prefix + ".h5:/geometryZ</DataItem>";
+    }
+    
     if (timestep == 0) {
         xdmfFile << "<?xml version=\"1.0\" ?>" << std::endl
                  << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>" << std::endl
@@ -350,30 +507,34 @@ void XDMFStencil::write(int timestep) {
                  // Time
                  << "        <Time Value=\"" << timestep << "\"/>" << std::endl
                  // Data
-                 << "            <Topology TopologyType=\"polygon\" NumberOfElements=\"" << allCells << "\" NodesPerElement=\"4" << "\">" << std::endl
-                 << "                <DataItem NumberType=\"UInt\" Precision=\"16\" Format=\"HDF\" Dimensions=\"" << allCells << " 4\">" << _parameters.xdmf.prefix
-                 << ".h5:/topology</DataItem>" << std::endl
-                 << "            </Topology>" << std::endl
-                 << "            <Geometry GeometryType=\"XYZ\" NumberOfElements=\"" << allPoints << "\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allPoints << " 3\">" << _parameters.xdmf.prefix
-                 << ".h5:/geometry</DataItem>" << std::endl
+                 << "            <Topology TopologyType=\"" << topologyType << "\" NumberOfElements=\""
+                                    << numberOfElementsString << "\"/>" << std::endl
+//                 << "            </Topology>" << std::endl
+                 << "            <Geometry GeometryType=\"VXVYVZ\">" << std::endl
+                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allPointsX << "\">" << _parameters.xdmf.prefix
+                 << ".h5:/geometryX</DataItem>" << std::endl
+                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allPointsY << "\">" << _parameters.xdmf.prefix
+                 << ".h5:/geometryY</DataItem>" << std::endl
+                 << "                " << geometryZString << std::endl
                  << "            </Geometry>" << std::endl
-                 << "            <Attribute Name=\"velocity\" Center=\"Cell\">" << std::endl
+                 
+                 << "            <Attribute Name=\"velocity\" Type=\"Vector\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"pressure\" Center=\"Cell\">" << std::endl
+                 << "            <Attribute Name=\"pressure\" Type=\"Vector\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"wallDistance\" Center=\"Cell\">" << std::endl
+                 << "            <Attribute Name=\"wallDistance\" Type=\"Vector\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"viscosity\" Center=\"Cell\">" << std::endl
+                 << "            <Attribute Name=\"viscosity\" Type=\"Vector\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
+                 
                  << "        </Grid>" << std::endl
                  << "    </Grid>" << std::endl
                  << "    </Domain>" << std::endl
@@ -382,31 +543,35 @@ void XDMFStencil::write(int timestep) {
         //write new timestep
         xdmfFile << "        <Grid>" << std::endl
                 << "        <Time Value=\"" << timestep << "\"/>" << std::endl
-                << "            <Topology TopologyType=\"polygon\" NumberOfElements=\"" << allCells << "\" NodesPerElement=\"4" << "\">" << std::endl
-                 << "                <DataItem NumberType=\"UInt\" Precision=\"16\" Format=\"HDF\" Dimensions=\"" << allCells << " 4\">" << _parameters.xdmf.prefix
-                 << ".h5:/topology</DataItem>" << std::endl
-                 << "            </Topology>" << std::endl
-                 << "            <Geometry GeometryType=\"XYZ\" NumberOfElements=\"" << allPoints << "\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allPoints << " 3\">" << _parameters.xdmf.prefix
-                 << ".h5:/geometry</DataItem>" << std::endl
-                 << "            </Geometry>" << std::endl
-                 << "            <Attribute Name=\"velocity\" Center=\"Cell\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity" << timestep << "</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"pressure\" Center=\"Cell\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure" << timestep << "</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"wallDistance\" Center=\"Cell\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"viscosity\" Center=\"Cell\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 << "        </Grid>" << std::endl
+                << "            <Topology TopologyType=\"" << topologyType << "\" NumberOfElements=\""
+                                << numberOfElementsString << "\"/>" << std::endl
+//                 << "            </Topology>" << std::endl
+                << "            <Geometry GeometryType=\"VXVYVZ\">" << std::endl
+                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allPointsX << "\">" << _parameters.xdmf.prefix
+                << ".h5:/geometryX</DataItem>" << std::endl
+                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allPointsY << "\">" << _parameters.xdmf.prefix
+                << ".h5:/geometryY</DataItem>" << std::endl
+                << "                " << geometryZString << std::endl
+                << "            </Geometry>" << std::endl
+        
+                << "            <Attribute Name=\"velocity\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
+                << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity" << timestep << "</DataItem>" << std::endl
+                << "            </Attribute>" << std::endl
+                << "            <Attribute Name=\"pressure\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
+                << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure" << timestep << "</DataItem>" << std::endl
+                << "            </Attribute>" << std::endl
+                << "            <Attribute Name=\"viscosity\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
+                << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
+                << "            </Attribute>" << std::endl
+                << "            <Attribute Name=\"wallDistance\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
+                << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
+                << "            </Attribute>" << std::endl
+                
+                << "        </Grid>" << std::endl
                  << "    </Grid>" << std::endl
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";

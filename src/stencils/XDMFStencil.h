@@ -25,8 +25,9 @@ protected:
     std::vector<FLOAT> viscosity;
 
     unsigned long allPoints;
+    long allPointsX, allPointsY, allPointsZ;
     unsigned long previousPoints;
-    unsigned long cells;
+    unsigned long cells, cellsX, cellsY, cellsZ;
     unsigned long allCells;
     unsigned long previousCells;
 
