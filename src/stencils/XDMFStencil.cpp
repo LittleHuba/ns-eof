@@ -12,12 +12,12 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     const unsigned int pointsZ = cellsZ + 1;
 
     unsigned long points = pointsX * pointsY * pointsZ;
-    MPI_Reduce(&points, &allPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, PETSC_COMM_WORLD);
+    MPI_Allreduce(&points, &allPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     MPI_Scan(&points, &previousPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     previousPoints -= points;
 
     cells = cellsX * cellsY * cellsZ;
-    MPI_Reduce(&cells, &allCells, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, PETSC_COMM_WORLD);
+    MPI_Allreduce(&cells, &allCells, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     MPI_Scan(&cells, &previousCells, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     previousCells -= cells;
 
@@ -26,6 +26,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     H5Pset_fapl_mpio(plist_file_id, PETSC_COMM_WORLD, MPI_INFO_NULL);
 
     file_id = H5Fcreate((parameters.xdmf.prefix + ".h5").c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_file_id);
+    H5Pclose(plist_file_id); // Release list identifier
 
     //get information needed to open datasets in collective mpi mode
     dxpl_id = H5Pcreate(H5P_DATASET_XFER);
@@ -81,7 +82,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     H5Dclose(geo_dataset_id);
     H5Sclose(geo_dataspace_id);
     H5Sclose(geo_memspace);
-
+    
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //write topology
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -184,7 +185,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     H5Dclose(wd_dataset_id);
     H5Sclose(wd_dataspace_id);
     H5Sclose(wd_memspace);
-
+    
     //Create XDMF File
     xdmfFile.open((_parameters.xdmf.prefix + ".xdmf").c_str());
 
@@ -257,10 +258,10 @@ void XDMFStencil::write(int timestep) {
     H5Sselect_hyperslab(vel_dataspace_id, H5S_SELECT_SET, vel_start, nullptr, vel_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
-    hsize_t vel_memspace_dims[2] = {(hsize_t) cells, 1};
+    hsize_t vel_memspace_dims[2] = {(hsize_t) cells, 3};
     hid_t vel_memspace = H5Screate_simple(2, vel_memspace_dims, nullptr);
     hsize_t vel_memory_start[2] = {0, 0};
-    hsize_t vel_memory_count[2] = {(hsize_t) cells, 1};
+    hsize_t vel_memory_count[2] = {(hsize_t) cells, 3};
     H5Sselect_hyperslab(vel_memspace, H5S_SELECT_SET, vel_memory_start, nullptr, vel_memory_count, nullptr);
 
     //write vector to dataset
@@ -332,15 +333,17 @@ void XDMFStencil::write(int timestep) {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (_parameters.parallel.rank != 0)
         return;
-
+    
     if (timestep == 0) {
         xdmfFile << "<?xml version=\"1.0\" ?>" << std::endl
                  << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>" << std::endl
                  << "<Xdmf Version=\"2.0\">" << std::endl
                  << "    <Domain>" << std::endl
-                 //TODO add temporal grid
+                 // Temporal grid
                  << "        <Grid>" << std::endl
-                 //TODO add time
+                 // Time
+                 << "        <Time Value=\"" << timestep << "\">" << std::endl
+                 // Data
                  << "            <Topology TopologyType=\"topology\" NumberOfElements=\"" << allCells << "\">" << std::endl
                  << "                <DataItem NumberType=\"UInt\" Precision=\"16\" Format=\"HDF\" Dimensions=\"" << allCells << " 4\">" << _parameters.xdmf.prefix
                  << ".h5:/topology</DataItem>" << std::endl
@@ -365,15 +368,15 @@ void XDMFStencil::write(int timestep) {
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 1\">" + _parameters.xdmf.prefix + ":/viscosity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
+                 << "        </Time>" << std::endl
                  << "        </Grid>" << std::endl
-                 // TODO add temporal grid closing tag
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";
     } else {
         //write new timestep
         xdmfFile << "        <Grid>" << std::endl
-                 //TODO add time
-                 << "            <Topology TopologyType=\"topology\" NumberOfElements=\"" << allCells << "\">" << std::endl
+                << "        <Time Value=\"" << timestep << "\">" << std::endl
+                << "            <Topology TopologyType=\"topology\" NumberOfElements=\"" << allCells << "\">" << std::endl
                  << "                <DataItem NumberType=\"UInt\" Precision=\"16\" Format=\"HDF\" Dimensions=\"" << allCells << " 4\">" << _parameters.xdmf.prefix
                  << ".h5:/topology</DataItem>" << std::endl
                  << "            </Topology>" << std::endl
@@ -397,8 +400,8 @@ void XDMFStencil::write(int timestep) {
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 1\">" + _parameters.xdmf.prefix + ":/viscosity" << timestep << "</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "        </Grid>" << std::endl
-                 // TODO add temporal grid closing tag
+                << "        </Time>" << std::endl
+                << "        </Grid>" << std::endl
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";
     }
@@ -408,7 +411,7 @@ void XDMFStencil::write(int timestep) {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Set cursor position so new timestep can be inserted
     //TODO Update offset to include temporal grid
-    xdmfFile.seekp(-21, std::ios_base::cur);
+    xdmfFile.seekp(-21, std::ios_base::cur); // This should actually be a good value, so that we write right after the "</Grid>" closing tag.
 
     //reinit buffers for attributes
     velocity.clear();
