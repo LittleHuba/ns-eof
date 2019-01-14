@@ -291,20 +291,20 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     //write wallDistance
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //create dataspace and dataset
-    hsize_t wd_dims[2] = {allCells, 1};
-    hid_t wd_dataspace_id = H5Screate_simple(2, wd_dims, nullptr);
+    hsize_t wd_dims[1] = {allCells};
+    hid_t wd_dataspace_id = H5Screate_simple(1, wd_dims, nullptr);
     hid_t wd_dataset_id = H5Dcreate(file_id, "wallDistance", H5T_NATIVE_DOUBLE, wd_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t wd_start[2] = {(hsize_t) previousCells, 0};
-    hsize_t wd_count[2] = {(hsize_t) cells, 1};
+    hsize_t wd_start[1] = {(hsize_t) previousCells};
+    hsize_t wd_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(wd_dataspace_id, H5S_SELECT_SET, wd_start, nullptr, wd_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
-    hsize_t wd_memspace_dims[2] = {(hsize_t) cells, 1};
-    hid_t wd_memspace = H5Screate_simple(2, wd_memspace_dims, nullptr);
-    hsize_t wd_memory_start[2] = {0, 0};
-    hsize_t wd_memory_count[2] = {(hsize_t) cells, 1};
+    hsize_t wd_memspace_dims[1] = {(hsize_t) cells};
+    hid_t wd_memspace = H5Screate_simple(1, wd_memspace_dims, nullptr);
+    hsize_t wd_memory_start[1] = {0};
+    hsize_t wd_memory_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(wd_memspace, H5S_SELECT_SET, wd_memory_start, nullptr, wd_memory_count, nullptr);
 
     std::vector<FLOAT> wallDistance = std::vector<FLOAT>();
@@ -422,20 +422,20 @@ void XDMFStencil::write(int timestep) {
     //write pressure
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //create dataspace and dataset
-    hsize_t p_dims[2] = {allCells, 1};
-    hid_t p_dataspace_id = H5Screate_simple(2, p_dims, nullptr);
+    hsize_t p_dims[1] = {allCells};
+    hid_t p_dataspace_id = H5Screate_simple(1, p_dims, nullptr);
     hid_t p_dataset_id = H5Dcreate(file_id, ("pressure" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, p_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t p_start[2] = {(hsize_t) previousCells, 0};
-    hsize_t p_count[2] = {(hsize_t) cells, 1};
+    hsize_t p_start[1] = {(hsize_t) previousCells};
+    hsize_t p_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(p_dataspace_id, H5S_SELECT_SET, p_start, nullptr, p_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
-    hsize_t p_memspace_dims[2] = {(hsize_t) cells, 1};
-    hid_t p_memspace = H5Screate_simple(2, p_memspace_dims, nullptr);
-    hsize_t p_memory_start[2] = {0, 0};
-    hsize_t p_memory_count[2] = {(hsize_t) cells, 1};
+    hsize_t p_memspace_dims[1] = {(hsize_t) cells};
+    hid_t p_memspace = H5Screate_simple(1, p_memspace_dims, nullptr);
+    hsize_t p_memory_start[1] = {0};
+    hsize_t p_memory_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(p_memspace, H5S_SELECT_SET, p_memory_start, nullptr, p_memory_count, nullptr);
 
     //write vector to dataset
@@ -450,20 +450,20 @@ void XDMFStencil::write(int timestep) {
     //write viscosity
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //create dataspace and dataset
-    hsize_t vc_dims[2] = {allCells, 1};
-    hid_t vc_dataspace_id = H5Screate_simple(2, vc_dims, nullptr);
+    hsize_t vc_dims[1] = {allCells};
+    hid_t vc_dataspace_id = H5Screate_simple(1, vc_dims, nullptr);
     hid_t vc_dataset_id = H5Dcreate(file_id, ("viscosity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, vc_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t vc_start[2] = {(hsize_t) previousCells, 0};
-    hsize_t vc_count[2] = {(hsize_t) cells, 1};
+    hsize_t vc_start[1] = {(hsize_t) previousCells};
+    hsize_t vc_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(vc_dataspace_id, H5S_SELECT_SET, vc_start, nullptr, vc_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
-    hsize_t vc_memspace_dims[2] = {(hsize_t) cells, 1};
-    hid_t vc_memspace = H5Screate_simple(2, vc_memspace_dims, nullptr);
-    hsize_t vc_memory_start[2] = {0, 0};
-    hsize_t vc_memory_count[2] = {(hsize_t) cells, 1};
+    hsize_t vc_memspace_dims[1] = {(hsize_t) cells};
+    hid_t vc_memspace = H5Screate_simple(1, vc_memspace_dims, nullptr);
+    hsize_t vc_memory_start[1] = {0};
+    hsize_t vc_memory_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(vc_memspace, H5S_SELECT_SET, vc_memory_start, nullptr, vc_memory_count, nullptr);
 
     //write vector to dataset
@@ -522,17 +522,17 @@ void XDMFStencil::write(int timestep) {
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                  << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"pressure\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                 << "            <Attribute Name=\"pressure\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure0</DataItem>" << std::endl
+                 << "\">" + _parameters.xdmf.prefix + ".h5:/pressure0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"wallDistance\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                 << "            <Attribute Name=\"wallDistance\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
+                 << "\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"viscosity\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                 << "            <Attribute Name=\"viscosity\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity0</DataItem>" << std::endl
+                 << "\">" + _parameters.xdmf.prefix + ".h5:/viscosity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  
                  << "        </Grid>" << std::endl
@@ -558,17 +558,17 @@ void XDMFStencil::write(int timestep) {
                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
                 << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity" << timestep << "</DataItem>" << std::endl
                 << "            </Attribute>" << std::endl
-                << "            <Attribute Name=\"pressure\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "            <Attribute Name=\"pressure\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure" << timestep << "</DataItem>" << std::endl
+                << "\">" + _parameters.xdmf.prefix + ".h5:/pressure" << timestep << "</DataItem>" << std::endl
                 << "            </Attribute>" << std::endl
-                << "            <Attribute Name=\"viscosity\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "            <Attribute Name=\"viscosity\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
+                << "\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
                 << "            </Attribute>" << std::endl
-                << "            <Attribute Name=\"wallDistance\" Type=\"Vector\" Center=\"Cell\">" << std::endl
+                << "            <Attribute Name=\"wallDistance\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
+                << "\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
                 << "            </Attribute>" << std::endl
                 
                 << "        </Grid>" << std::endl

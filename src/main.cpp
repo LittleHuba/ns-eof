@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     int timeSteps = 0;
 
     // plot initial state
-    simulation->plotVTK(timeSteps);
+//    simulation->plotVTK(timeSteps);
     simulation->plotXDMF(xdmfTimestep);
     xdmfTimestep++;
 
@@ -91,10 +91,10 @@ int main(int argc, char *argv[]) {
         timeSteps++;
 
         // trigger VTK output
-        if (timeVTKOut <= time) {
-            simulation->plotVTK(timeSteps);
-            timeVTKOut += parameters.vtk.interval;
-        }
+//        if (timeVTKOut <= time) {
+//            simulation->plotVTK(timeSteps);
+//            timeVTKOut += parameters.vtk.interval;
+//        }
 
         if (timeXDMFOut <= time) {
             simulation->plotXDMF(xdmfTimestep);
@@ -102,8 +102,8 @@ int main(int argc, char *argv[]) {
             xdmfTimestep++;
         }
 
-        PetscFinalize();
-        exit(0);
+//        PetscFinalize();
+//        exit(0);
     }
 
     // plot final output
