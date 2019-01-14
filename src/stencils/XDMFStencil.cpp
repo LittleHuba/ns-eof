@@ -16,7 +16,13 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     MPI_Scan(&points, &previousPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     previousPoints -= points;
 
-    cells = cellsX * cellsY * cellsZ;
+    if(_parameters.geometry.dim == 3){
+        cells = cellsX * cellsY * cellsZ;
+    }
+    else{
+        cells = cellsX * cellsY;
+    }
+
     MPI_Allreduce(&cells, &allCells, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     MPI_Scan(&cells, &previousCells, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
     previousCells -= cells;
@@ -107,8 +113,8 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     std::vector<FLOAT> topology = std::vector<FLOAT>();
     if (parameters.geometry.dim == 2) {
         topology.reserve(cells* 4);
-        for (unsigned int j = 2; j < cellsY + 2; j++) {
-            for (unsigned int i = 2; i < cellsX + 2; i++) {
+        for (unsigned int j = 0; j < cellsY + 2; j++) {
+            for (unsigned int i = 0; i < cellsX + 2; i++) {
                 topology.push_back(j * i);
                 topology.push_back(j * (i + 1));
                 topology.push_back((j + 1) * (i + 1));
@@ -339,12 +345,12 @@ void XDMFStencil::write(int timestep) {
                  << "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>" << std::endl
                  << "<Xdmf Version=\"2.0\">" << std::endl
                  << "    <Domain>" << std::endl
-                 // Temporal grid
+                 << "    <Grid CollectionType=\"Temporal\" GridType=\"Collection\" Name=\"FE time series\">" << std::endl
                  << "        <Grid>" << std::endl
                  // Time
-                 << "        <Time Value=\"" << timestep << "\">" << std::endl
+                 << "        <Time Value=\"" << timestep << "\"/>" << std::endl
                  // Data
-                 << "            <Topology TopologyType=\"topology\" NumberOfElements=\"" << allCells << "\">" << std::endl
+                 << "            <Topology TopologyType=\"polygon\" NumberOfElements=\"" << allCells << "\" NodesPerElement=\"4" << "\">" << std::endl
                  << "                <DataItem NumberType=\"UInt\" Precision=\"16\" Format=\"HDF\" Dimensions=\"" << allCells << " 4\">" << _parameters.xdmf.prefix
                  << ".h5:/topology</DataItem>" << std::endl
                  << "            </Topology>" << std::endl
@@ -354,29 +360,29 @@ void XDMFStencil::write(int timestep) {
                  << "            </Geometry>" << std::endl
                  << "            <Attribute Name=\"velocity\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 3\">" + _parameters.xdmf.prefix + ":/velocity0</DataItem>" << std::endl
+                 << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  << "            <Attribute Name=\"pressure\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ":/pressure0</DataItem>" << std::endl
+                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  << "            <Attribute Name=\"wallDistance\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ":/wallDistance</DataItem>" << std::endl
+                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  << "            <Attribute Name=\"viscosity\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ":/viscosity0</DataItem>" << std::endl
+                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity0</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                 << "        </Time>" << std::endl
                  << "        </Grid>" << std::endl
+                 << "    </Grid>" << std::endl
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";
     } else {
         //write new timestep
         xdmfFile << "        <Grid>" << std::endl
-                << "        <Time Value=\"" << timestep << "\">" << std::endl
-                << "            <Topology TopologyType=\"topology\" NumberOfElements=\"" << allCells << "\">" << std::endl
+                << "        <Time Value=\"" << timestep << "\"/>" << std::endl
+                << "            <Topology TopologyType=\"polygon\" NumberOfElements=\"" << allCells << "\" NodesPerElement=\"4" << "\">" << std::endl
                  << "                <DataItem NumberType=\"UInt\" Precision=\"16\" Format=\"HDF\" Dimensions=\"" << allCells << " 4\">" << _parameters.xdmf.prefix
                  << ".h5:/topology</DataItem>" << std::endl
                  << "            </Topology>" << std::endl
@@ -386,22 +392,22 @@ void XDMFStencil::write(int timestep) {
                  << "            </Geometry>" << std::endl
                  << "            <Attribute Name=\"velocity\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 3\">" + _parameters.xdmf.prefix + ":/velocity" << timestep << "</DataItem>" << std::endl
+                 << " 3\">" + _parameters.xdmf.prefix + ".h5:/velocity" << timestep << "</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  << "            <Attribute Name=\"pressure\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ":/pressure" << timestep << "</DataItem>" << std::endl
+                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/pressure" << timestep << "</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  << "            <Attribute Name=\"wallDistance\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ":/wallDistance</DataItem>" << std::endl
+                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
                  << "            <Attribute Name=\"viscosity\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCells
-                 << " 1\">" + _parameters.xdmf.prefix + ":/viscosity" << timestep << "</DataItem>" << std::endl
+                 << " 1\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
                  << "            </Attribute>" << std::endl
-                << "        </Time>" << std::endl
-                << "        </Grid>" << std::endl
+                 << "        </Grid>" << std::endl
+                 << "    </Grid>" << std::endl
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";
     }
@@ -411,7 +417,7 @@ void XDMFStencil::write(int timestep) {
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Set cursor position so new timestep can be inserted
     //TODO Update offset to include temporal grid
-    xdmfFile.seekp(-21, std::ios_base::cur); // This should actually be a good value, so that we write right after the "</Grid>" closing tag.
+    xdmfFile.seekp(-32, std::ios_base::cur); // This should actually be a good value, so that we write right after the "</Grid>" closing tag.
 
     //reinit buffers for attributes
     velocity.clear();
