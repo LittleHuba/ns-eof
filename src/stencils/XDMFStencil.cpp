@@ -7,12 +7,13 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     cellsY = static_cast<const unsigned int>(parameters.parallel.localSize[1]);
     cellsZ = (_parameters.geometry.dim == 3) ? static_cast<const unsigned int>(parameters.parallel.localSize[2]) : 0;
     
-    int firstCornerX = _parameters.parallel.firstCorner[0];
-    int firstCornerY = _parameters.parallel.firstCorner[1];
-    int firstCornerZ = _parameters.parallel.firstCorner[2];
-    bool isLeft = firstCornerX == 0;
-    bool isBottom = firstCornerY == 0;
-    bool isFront = firstCornerZ == 0;
+    firstCornerX = _parameters.parallel.firstCorner[0];
+    firstCornerY = _parameters.parallel.firstCorner[1];
+    firstCornerZ = _parameters.parallel.firstCorner[2];
+    isLeft = firstCornerX == 0;
+    isBottom = firstCornerY == 0;
+    isFront = firstCornerZ == 0;
+
     
     unsigned int pointsX;
     unsigned int pointsY;
@@ -20,6 +21,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     unsigned int iStart;
     unsigned int jStart;
     unsigned int kStart;
+
     if (isLeft)
     {
         pointsX = cellsX + 1;
@@ -52,10 +54,24 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
         pointsZ = cellsZ;
         kStart = 3;
     }
+
+    writeCellsZ = cellsZ;
+    if(_parameters.geometry.dim == 2){
+        writeCellsZ = 1;
+    }
     
     allPointsX = _parameters.geometry.sizeX + 1;
     allPointsY = _parameters.geometry.sizeY + 1;
-    allPointsZ = _parameters.geometry.sizeZ + 1;
+    allCellsX = _parameters.geometry.sizeX;
+    allCellsY = _parameters.geometry.sizeY;
+    if(_parameters.geometry.dim == 2){
+        allPointsZ = 1;
+        allCellsZ = 1;
+    }
+    else {
+        allPointsZ = _parameters.geometry.sizeZ + 1;
+        allCellsZ = _parameters.geometry.sizeZ;
+    }
     
     unsigned long points = pointsX * pointsY * pointsZ;
     MPI_Allreduce(&points, &allPoints, 1, MPI_UNSIGNED_LONG, MPI_SUM, PETSC_COMM_WORLD);
@@ -83,7 +99,6 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     //get information needed to open datasets in collective mpi mode
     dxpl_id = H5Pcreate(H5P_DATASET_XFER);
     H5Pset_dxpl_mpio(dxpl_id, H5FD_MPIO_COLLECTIVE);
-    
     int rank = _parameters.parallel.rank;
     
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -91,7 +106,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     std::cout << "[Rank=" << rank << "] "
               << "allPointsX=" << allPointsX
-              << ", firstCornerX=" << firstCornerX + static_cast<int>(!isLeft)
+              << ", firstCornerX=" << firstCornerX+(int)(!isLeft)
               << ", pointsX=" << pointsX
               << std::endl;
     
@@ -102,7 +117,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     hid_t geoX_dataset_id = H5Dcreate(file_id, "geometryX", H5T_NATIVE_DOUBLE, geoX_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t geoX_start[2] = {(hsize_t) (firstCornerX + static_cast<int>(!isLeft)), 0}; // The "+1" here is because the leftmost block covers 1 extra point.
+    hsize_t geoX_start[2] = {(hsize_t) (firstCornerX+(int)(!isLeft)), 0}; // The "+1" here is because the leftmost block covers 1 extra point.
     hsize_t geoX_count[2] = {pointsX, 1};
     H5Sselect_hyperslab(geoX_dataspace_id, H5S_SELECT_SET, geoX_start, nullptr, geoX_count, nullptr);
 
@@ -134,7 +149,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     std::cout << "[Rank=" << rank << "] "
               << "allPointsY=" << allPointsY
-              << ", firstCornerX=" << firstCornerX + static_cast<int>(!isBottom)
+              << ", firstCornerY=" << firstCornerY+(int)(!isBottom)
               << ", pointsY=" << pointsY
               << std::endl;
     
@@ -145,7 +160,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     hid_t geoY_dataset_id = H5Dcreate(file_id, "geometryY", H5T_NATIVE_DOUBLE, geoY_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     
     //select hyperslab of the dataspace
-    hsize_t geoY_start[2] = {(hsize_t) (firstCornerY + static_cast<int>(!isBottom)), 0}; // The "+1" here is because the leftmost block covers 1 extra point.
+    hsize_t geoY_start[2] = {(hsize_t) (firstCornerY+(int)(!isBottom)), 0}; // The "+1" here is because the leftmost block covers 1 extra point.
     hsize_t geoY_count[2] = {pointsY, 1};
     H5Sselect_hyperslab(geoY_dataspace_id, H5S_SELECT_SET, geoY_start, nullptr, geoY_count, nullptr);
     
@@ -179,7 +194,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     {
         std::cout << "[Rank=" << rank << "] "
                   << "allPointsZ=" << allPointsZ
-                  << ", firstCornerZ=" << firstCornerZ + static_cast<int>(!isFront)
+                  << ", firstCornerZ=" << firstCornerZ+(int)(!isFront)
                   << ", pointsZ=" << pointsZ
                   << std::endl;
     
@@ -191,7 +206,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
                                           H5P_DEFAULT, H5P_DEFAULT);
     
         //select hyperslab of the dataspace
-        hsize_t geoZ_start[2] = {(hsize_t) (firstCornerZ + static_cast<int>(!isFront)),
+        hsize_t geoZ_start[2] = {(hsize_t) (firstCornerZ+(int)(!isLeft)),
                                  0}; // The "+1" here is because the leftmost block covers 1 extra point.
         hsize_t geoZ_count[2] = {pointsZ, 1};
         H5Sselect_hyperslab(geoZ_dataspace_id, H5S_SELECT_SET, geoZ_start, nullptr, geoZ_count, nullptr);
@@ -221,83 +236,21 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     }
     
     
-//    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//    //write topology
-//    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//    //create dataspace and dataset
-//    hsize_t topo_dims[2] = {allCells, 4};
-//    hid_t topo_dataspace_id = H5Screate_simple(2, topo_dims, nullptr);
-//    hid_t topo_dataset_id = H5Dcreate(file_id, "topology", H5T_NATIVE_ULONG, topo_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-//
-//    //select hyperslab of the dataspace
-//    hsize_t topo_start[2] = {(hsize_t) previousCells, 0};
-//    hsize_t topo_count[2] = {(hsize_t) cells, 4};
-//    H5Sselect_hyperslab(topo_dataspace_id, H5S_SELECT_SET, topo_start, nullptr, topo_count, nullptr);
-//
-//    //create a hyperslab selection of the vector in the memory
-//    hsize_t topo_memspace_dims[2] = {(hsize_t) cells * 4, 1};
-//    hid_t topo_memspace = H5Screate_simple(2, topo_memspace_dims, nullptr);
-//    hsize_t topo_memory_start[2] = {0, 0};
-//    hsize_t topo_memory_count[2] = {(hsize_t) cells * 4, 1};
-//    H5Sselect_hyperslab(topo_memspace, H5S_SELECT_SET, topo_memory_start, nullptr, topo_memory_count, nullptr);
-//
-//    //TODO check if this algorithm is right...
-//    std::vector<unsigned long> topology = std::vector<unsigned long>();
-//    if (parameters.geometry.dim == 2) {
-//        topology.reserve(cells * 4);
-//        unsigned int Xbase = _parameters.parallel.firstCorner[0];
-//        unsigned int Ybase = _parameters.parallel.firstCorner[1];
-//        for (unsigned int j = Xbase; j < cellsY + 2; j++) {
-//            for (unsigned int i = Ybase; i < cellsX + 2; i++) {
-//                topology.push_back(j * i);
-//                topology.push_back(j * (i + 1));
-//                topology.push_back((j + 1) * (i + 1));
-//                topology.push_back((j + 1) * i);
-//            }
-//        }
-//    } else {
-//        topology.reserve(cells * 8);
-//        int Xbase = _parameters.parallel.firstCorner[0];
-//        int Ybase = _parameters.parallel.firstCorner[1];
-//        int Zbase = _parameters.parallel.firstCorner[2];
-//        int numXcells = _parameters.parallel.localSize[0];
-//        int numYcells = _parameters.parallel.localSize[1];
-//        int numZcells = _parameters.parallel.localSize[2];
-//        for (unsigned int k = 2; k < cellsZ + 2; k++) {
-//            for (unsigned int j = 2; j < cellsY + 2; j++) {
-//                for (unsigned int i = 2; i < cellsX + 2; i++) {
-//                    topology.push_back(k * j * i);
-//                    topology.push_back(k * j * (i + 1));
-//                    topology.push_back(k * (j + 1) * (i + 1));
-//                    topology.push_back(k * (j + 1) * i);
-//                    topology.push_back((k + 1) * j * i);
-//                    topology.push_back((k + 1) * j * (i + 1));
-//                    topology.push_back((k + 1) * (j + 1) * (i + 1));
-//                    topology.push_back((k + 1) * (j + 1) * i);
-//                }
-//            }
-//        }
-//    }
-//
-//    //write vector to dataset
-//    H5Dwrite(topo_dataset_id, H5T_NATIVE_ULONG, topo_memspace, topo_dataspace_id, dxpl_id, topology.data());
-//
-//    //close dataset and dataspaces
-//    H5Dclose(topo_dataset_id);
-//    H5Sclose(topo_dataspace_id);
-//    H5Sclose(topo_memspace);
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //write wallDistance
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
     //create dataspace and dataset
-    hsize_t wd_dims[1] = {allCells};
-    hid_t wd_dataspace_id = H5Screate_simple(1, wd_dims, nullptr);
+    hsize_t wd_dims[3] = {static_cast<hsize_t>(allCellsZ), static_cast<hsize_t>(allCellsY), static_cast<hsize_t>(allCellsX)};
+    hid_t wd_dataspace_id = H5Screate_simple(3, wd_dims, nullptr);
     hid_t wd_dataset_id = H5Dcreate(file_id, "wallDistance", H5T_NATIVE_DOUBLE, wd_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t wd_start[1] = {(hsize_t) previousCells};
-    hsize_t wd_count[1] = {(hsize_t) cells};
+    hsize_t wd_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX};
+    hsize_t wd_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
+
     H5Sselect_hyperslab(wd_dataspace_id, H5S_SELECT_SET, wd_start, nullptr, wd_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
@@ -331,7 +284,7 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     H5Dclose(wd_dataset_id);
     H5Sclose(wd_dataspace_id);
     H5Sclose(wd_memspace);
-    
+
     //Create XDMF File
     xdmfFile.open((_parameters.xdmf.prefix + ".xdmf").c_str());
 
@@ -341,6 +294,8 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
     pressure.reserve(cells);
     viscosity = std::vector<FLOAT>();
     viscosity.reserve(cells);
+
+
 }
 
 inline void XDMFStencil::apply(FlowField &flowField, int i, int j) {
@@ -379,6 +334,8 @@ inline void XDMFStencil::apply(FlowField &flowField, int i, int j, int k) {
         this->velocity.push_back(velocity[1]);
         this->velocity.push_back(velocity[2]);
         this->viscosity.push_back(flowField.getTurbulentViscosity().getScalar(i, j, k));
+
+
     } else {
         //write data into buffers
         this->pressure.push_back(0.0);
@@ -390,17 +347,20 @@ inline void XDMFStencil::apply(FlowField &flowField, int i, int j, int k) {
 }
 
 void XDMFStencil::write(int timestep) {
+
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //write velocity
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //create dataspace and dataset
-    hsize_t vel_dims[2] = {allCells, 3};
-    hid_t vel_dataspace_id = H5Screate_simple(2, vel_dims, nullptr);
+    hsize_t vel_dims[4] = {static_cast<hsize_t>(allCellsZ), static_cast<hsize_t>(allCellsY), static_cast<hsize_t>(allCellsX), 3};
+    hid_t vel_dataspace_id = H5Screate_simple(4, vel_dims, nullptr);
     hid_t vel_dataset_id = H5Dcreate(file_id, ("velocity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, vel_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t vel_start[2] = {(hsize_t) previousCells, 0};
-    hsize_t vel_count[2] = {(hsize_t) cells, 3};
+    hsize_t vel_start[4] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX, 0};
+    hsize_t vel_count[4] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX, 3};
+
     H5Sselect_hyperslab(vel_dataspace_id, H5S_SELECT_SET, vel_start, nullptr, vel_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
@@ -411,7 +371,7 @@ void XDMFStencil::write(int timestep) {
     H5Sselect_hyperslab(vel_memspace, H5S_SELECT_SET, vel_memory_start, nullptr, vel_memory_count, nullptr);
 
     //write vector to dataset
-    H5Dwrite(vel_dataset_id, H5T_NATIVE_DOUBLE, vel_memspace, vel_dataspace_id, dxpl_id, velocity.data());
+    H5Dwrite(vel_dataset_id, H5T_NATIVE_DOUBLE, vel_memspace, vel_dataspace_id, dxpl_id, this->velocity.data());
 
     //close dataset and dataspaces
     H5Dclose(vel_dataset_id);
@@ -422,13 +382,15 @@ void XDMFStencil::write(int timestep) {
     //write pressure
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //create dataspace and dataset
-    hsize_t p_dims[1] = {allCells};
-    hid_t p_dataspace_id = H5Screate_simple(1, p_dims, nullptr);
+
+    hsize_t p_dims[3] = {static_cast<hsize_t>(allCellsZ), static_cast<hsize_t>(allCellsY), static_cast<hsize_t>(allCellsX)};
+    hid_t p_dataspace_id = H5Screate_simple(3, p_dims, nullptr);
     hid_t p_dataset_id = H5Dcreate(file_id, ("pressure" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, p_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t p_start[1] = {(hsize_t) previousCells};
-    hsize_t p_count[1] = {(hsize_t) cells};
+    hsize_t p_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX};
+    hsize_t p_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
+
     H5Sselect_hyperslab(p_dataspace_id, H5S_SELECT_SET, p_start, nullptr, p_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
@@ -437,9 +399,8 @@ void XDMFStencil::write(int timestep) {
     hsize_t p_memory_start[1] = {0};
     hsize_t p_memory_count[1] = {(hsize_t) cells};
     H5Sselect_hyperslab(p_memspace, H5S_SELECT_SET, p_memory_start, nullptr, p_memory_count, nullptr);
-
     //write vector to dataset
-    H5Dwrite(p_dataset_id, H5T_NATIVE_DOUBLE, p_memspace, p_dataspace_id, dxpl_id, pressure.data());
+    H5Dwrite(p_dataset_id, H5T_NATIVE_DOUBLE, p_memspace, p_dataspace_id, dxpl_id, this->pressure.data());
 
     //close dataset and dataspaces
     H5Dclose(p_dataset_id);
@@ -450,13 +411,13 @@ void XDMFStencil::write(int timestep) {
     //write viscosity
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //create dataspace and dataset
-    hsize_t vc_dims[1] = {allCells};
-    hid_t vc_dataspace_id = H5Screate_simple(1, vc_dims, nullptr);
+    hsize_t vc_dims[3] = {static_cast<hsize_t>(allCellsZ), static_cast<hsize_t>(allCellsY), static_cast<hsize_t>(allCellsX)};
+    hid_t vc_dataspace_id = H5Screate_simple(3, vc_dims, nullptr);
     hid_t vc_dataset_id = H5Dcreate(file_id, ("viscosity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, vc_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
     //select hyperslab of the dataspace
-    hsize_t vc_start[1] = {(hsize_t) previousCells};
-    hsize_t vc_count[1] = {(hsize_t) cells};
+    hsize_t vc_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX};
+    hsize_t vc_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
     H5Sselect_hyperslab(vc_dataspace_id, H5S_SELECT_SET, vc_start, nullptr, vc_count, nullptr);
 
     //create a hyperslab selection of the vector in the memory
@@ -478,7 +439,12 @@ void XDMFStencil::write(int timestep) {
     //Add timestep to XDMF-File
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (_parameters.parallel.rank != 0)
+    {
+        velocity.clear();
+        pressure.clear();
+        viscosity.clear();
         return;
+    }
     
     std::string topologyType, numberOfElementsString;
     std::string geometryZString;

@@ -26,10 +26,18 @@ protected:
 
     unsigned long allPoints;
     long allPointsX, allPointsY, allPointsZ;
+    long allCellsX, allCellsY, allCellsZ;
+    int writeCellsZ;
     unsigned long previousPoints;
     unsigned long cells, cellsX, cellsY, cellsZ;
     unsigned long allCells;
     unsigned long previousCells;
+    int firstCornerX;
+    int firstCornerY;
+    int firstCornerZ;
+    bool isLeft;
+    bool isBottom;
+    bool isFront;
 
 
 public:
