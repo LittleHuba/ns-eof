@@ -474,6 +474,11 @@ void XDMFStencil::write(int timestep) {
     H5Sclose(vc_dataspace_id);
     H5Sclose(vc_memspace);
 
+    //reinit buffers for attributes
+    velocity.clear();
+    pressure.clear();
+    viscosity.clear();
+
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Add timestep to XDMF-File
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -583,9 +588,4 @@ void XDMFStencil::write(int timestep) {
     //Set cursor position so new timestep can be inserted
     //TODO Update offset to include temporal grid
     xdmfFile.seekp(-32, std::ios_base::cur); // This should actually be a good value, so that we write right after the "</Grid>" closing tag.
-
-    //reinit buffers for attributes
-    velocity.clear();
-    pressure.clear();
-    viscosity.clear();
 }
