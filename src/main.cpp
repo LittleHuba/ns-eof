@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     }
 
     // plot final output
-    simulation->plotVTK(timeSteps);
+//    simulation->plotVTK(timeSteps);
     simulation->plotXDMF(xdmfTimestep);
 
     delete simulation;
