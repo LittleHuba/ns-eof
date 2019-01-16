@@ -463,13 +463,13 @@ void XDMFStencil::write(int timestep) {
     if (_parameters.geometry.dim == 2)
     {
         topologyType = "2DRectMesh";
-        numberOfElementsString = std::to_string(allPointsX) + " " + std::to_string(allPointsY);
+        numberOfElementsString = std::to_string(allPointsY) + " " + std::to_string(allPointsX);
         geometryZString = "";
     }
     else
     {
         topologyType = "3DRectMesh";
-        numberOfElementsString = std::to_string(allPointsX) + " " + std::to_string(allPointsY) + " " + std::to_string(allPointsZ);
+        numberOfElementsString = std::to_string(allPointsZ) + " " + std::to_string(allPointsY) + " " + std::to_string(allPointsX);
         geometryZString = "<DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" 
                 + std::to_string(allPointsZ) + "\">"
                 + _parameters.xdmf.prefix + ".h5:/geometryZ</DataItem>";
