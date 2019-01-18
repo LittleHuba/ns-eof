@@ -92,13 +92,23 @@ class WallParameters{
 };
 
 class VTKParameters{
-    public:
+public:
+    VTKParameters() : active(false) // False by default, to be activated in the Configuration.cpp
+    {}
+
+public:
+        bool active;
         FLOAT interval;     //! Time interval for file printing
         std::string prefix;   //! Output filename
 };
 
 class XDMFParameters{
 public:
+    XDMFParameters() : active(false) // False by default, to be activated in the Configuration.cpp
+    {}
+
+public:
+    bool active;
     FLOAT interval;     //! Time interval for file printing
     std::string prefix;   //! Output filename
 };

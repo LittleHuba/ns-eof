@@ -2,6 +2,11 @@
 
 XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : FieldStencil(parameters) {
     
+//    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+//    {
+//        return;
+//    }
+    
     // Get some initial information about the grid
     cellsX = static_cast<const unsigned int>(parameters.parallel.localSize[0]);
     cellsY = static_cast<const unsigned int>(parameters.parallel.localSize[1]);
@@ -354,7 +359,10 @@ inline void XDMFStencil::apply(FlowField &flowField, int i, int j, int k) {
 }
 
 void XDMFStencil::write(int timestep) {
-//    return; //TODO: remove this debug return
+//    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+//    {
+//        return;
+//    }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //write velocity

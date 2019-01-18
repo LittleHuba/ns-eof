@@ -67,17 +67,26 @@ int main(int argc, char *argv[]) {
     FLOAT timeStdOut = parameters.stdOut.interval;
     FLOAT timeVTKOut = parameters.vtk.interval;
     FLOAT timeXDMFOut = parameters.xdmf.interval;
-    int xdmfTimestep = 0;
+    int XDMFtimeStep = 0;
+    int VTKtimeStep = 0;
     int timeSteps = 0;
 
     // plot initial state
-//    simulation->plotVTK(timeSteps);
-    simulation->plotXDMF(xdmfTimestep);
-    xdmfTimestep++;
+    if (parameters.xdmf.active)
+    {
+        simulation->plotXDMF(XDMFtimeStep);
+        XDMFtimeStep++;
+    }
+    if (parameters.vtk.active)
+    {
+        simulation->plotVTK(VTKtimeStep);
+        VTKtimeStep++;
+    }
 
+    
     // time loop
     while (time < parameters.simulation.finalTime) {
-
+    
         simulation->solveTimestep();
 
         time += parameters.timestep.dt;
@@ -90,25 +99,29 @@ int main(int argc, char *argv[]) {
 
         timeSteps++;
 
-        // trigger VTK output
-//        if (timeVTKOut <= time) {
-//            simulation->plotVTK(timeSteps);
-//            timeVTKOut += parameters.vtk.interval;
-//        }
-
-        if (timeXDMFOut <= time) {
-            simulation->plotXDMF(xdmfTimestep);
-            timeXDMFOut += parameters.xdmf.interval;
-            xdmfTimestep++;
+        // trigger output
+        if (parameters.vtk.active && timeVTKOut <= time) {
+            simulation->plotVTK(VTKtimeStep);
+            timeVTKOut += parameters.vtk.interval;
+            VTKtimeStep++;
         }
 
-//        PetscFinalize();
-//        exit(0);
+        if (parameters.xdmf.active && timeXDMFOut <= time) {
+            simulation->plotXDMF(XDMFtimeStep);
+            timeXDMFOut += parameters.xdmf.interval;
+            XDMFtimeStep++;
+        }
     }
 
     // plot final output
-//    simulation->plotVTK(timeSteps);
-    simulation->plotXDMF(xdmfTimestep);
+    if (parameters.xdmf.active)
+    {
+        simulation->plotXDMF(XDMFtimeStep);
+    }
+    if (parameters.vtk.active)
+    {
+        simulation->plotVTK(VTKtimeStep);
+    }
 
     delete simulation;
     simulation = nullptr;

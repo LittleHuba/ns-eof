@@ -179,6 +179,10 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
         if (parameters.geometry.dim == 3 && parameters.geometry.sizeZ == 1){
             handleError(1, "Inconsistent data: 3D geometry specified with Z size zero");
         }
+        else if (parameters.geometry.dim == 2 && parameters.geometry.sizeZ != 1)
+        {
+            parameters.geometry.sizeZ = 1; // Forcing to 1 in case 2D, we don't want to be picky with this.
+        }
 
         // Determine the sizes of the cells
 
@@ -296,12 +300,12 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
 
         node = confFile.FirstChildElement()->FirstChildElement("vtk");
 
-        if (node == NULL){
-            handleError(1, "Error loading VTK parameters");
+        if (node != NULL)
+        {
+            parameters.vtk.active = true;
+            readFloatOptional(parameters.vtk.interval, node, "interval");
+            readStringMandatory(parameters.vtk.prefix, node);
         }
-
-        readFloatOptional(parameters.vtk.interval, node, "interval");
-        readStringMandatory(parameters.vtk.prefix, node);
 
         //--------------------------------------------------
         // XDMF parameters
@@ -309,12 +313,18 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
 
         node = confFile.FirstChildElement()->FirstChildElement("xdmf");
 
-        if (node == NULL){
-            handleError(1, "Error loading XDMF parameters");
+        if (node != NULL)
+        {
+            parameters.xdmf.active = true;
+            readFloatOptional(parameters.xdmf.interval, node, "interval");
+            readStringMandatory(parameters.xdmf.prefix, node);
         }
-
-        readFloatOptional(parameters.xdmf.interval, node, "interval");
-        readStringMandatory(parameters.xdmf.prefix, node);
+        
+        // Warning if no output method has been set
+        if (!parameters.vtk.active && !parameters.xdmf.active)
+        {
+            std::cout << "WARNING: No output will be written (no VTK nor XDMF tags in config)!" << std::endl;
+        }
 
         //--------------------------------------------------
         // StdOut parameters
@@ -471,6 +481,8 @@ void Configuration::loadParameters(Parameters & parameters, const MPI_Comm & com
 
     MPI_Bcast(&(parameters.simulation.finalTime), 1, MY_MPI_FLOAT, 0, communicator);
 
+    MPI_Bcast(&(parameters.vtk.active), 1, MPI_CXX_BOOL, 0, communicator);
+    MPI_Bcast(&(parameters.xdmf.active), 1, MPI_CXX_BOOL, 0, communicator);
     MPI_Bcast(&(parameters.vtk.interval), 1, MY_MPI_FLOAT, 0, communicator);
     MPI_Bcast(&(parameters.xdmf.interval), 1, MY_MPI_FLOAT, 0, communicator);
     MPI_Bcast(&(parameters.stdOut.interval), 1, MPI_INT, 0, communicator);
