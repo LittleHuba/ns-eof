@@ -205,7 +205,7 @@ public:
         // write flow field information to vtk file
         _vtkStencil.write(timeStep);
     }
-
+    
     /** plots the flow field. */
     virtual void plotXDMF(int timeStep)
     {

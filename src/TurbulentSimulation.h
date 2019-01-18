@@ -56,6 +56,9 @@ public:
 
         // transfer wall distance
         _parallelManager.exchangeWallDistance();
+        
+        // Here finally we can write the wall distance in the XDMF/HDF5 files!
+        _xdmfStencil.writeWallDistance(_flowField);
     }
 
     void solveTimestep() override {

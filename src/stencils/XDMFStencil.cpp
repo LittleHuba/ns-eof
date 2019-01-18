@@ -2,10 +2,10 @@
 
 XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : FieldStencil(parameters) {
     
-//    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
-//    {
-//        return;
-//    }
+    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+    {
+        return;
+    }
     
     // Get some initial information about the grid
     cellsX = static_cast<const unsigned int>(parameters.parallel.localSize[0]);
@@ -243,60 +243,6 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
         H5Sclose(geoZ_memspace);
     }
 
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //write wallDistance
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    std::cout << "Writing wallDistance" << std::endl;
-
-    //create dataspace and dataset
-    hsize_t wd_dims[3] = {(hsize_t) allCellsZ, (hsize_t) allCellsY, (hsize_t) allCellsX};
-    hid_t wd_dataspace_id = H5Screate_simple(3, wd_dims, nullptr);
-    hid_t wd_dataset_id = H5Dcreate(file_id, "wallDistance", H5T_NATIVE_DOUBLE, wd_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-    //select hyperslab of the dataspace
-    hsize_t wd_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX};
-    hsize_t wd_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t) cellsX};
-
-    H5Sselect_hyperslab(wd_dataspace_id, H5S_SELECT_SET, wd_start, nullptr, wd_count, nullptr);
-
-    //create a hyperslab selection of the vector in the memory
-    hsize_t wd_memspace_dims[1] = {(hsize_t) cells};
-    hid_t wd_memspace = H5Screate_simple(1, wd_memspace_dims, nullptr);
-    hsize_t wd_memory_start[1] = {0};
-    hsize_t wd_memory_count[1] = {(hsize_t) cells};
-    H5Sselect_hyperslab(wd_memspace, H5S_SELECT_SET, wd_memory_start, nullptr, wd_memory_count, nullptr);
-    
-//    hsize_t wd_memspace_dims[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
-//    hid_t wd_memspace = H5Screate_simple(3, wd_memspace_dims, nullptr);
-//    hsize_t wd_memory_start[3] = {0, 0, 0};
-//    hsize_t wd_memory_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
-//    H5Sselect_hyperslab(wd_memspace, H5S_SELECT_SET, wd_memory_start, nullptr, wd_memory_count, nullptr);
-
-    std::vector<FLOAT> wallDistance = std::vector<FLOAT>();
-    wallDistance.reserve(cells);
-    if (parameters.geometry.dim == 2)
-        for (unsigned int j = 2; j < cellsY + 2; j++) {
-            for (unsigned int i = 2; i < cellsX + 2; i++) {
-                wallDistance.push_back(flowField.getNearestWallDistance().getScalar(i, j));
-            }
-        }
-    else
-        for (unsigned int k = 2; k < cellsZ + 2; k++) {
-            for (unsigned int j = 2; j < cellsY + 2; j++) {
-                for (unsigned int i = 2; i < cellsX + 2; i++) {
-                    wallDistance.push_back(flowField.getNearestWallDistance().getScalar(i, j, k));
-                }
-            }
-        }
-
-    //write vector to dataset
-    H5Dwrite(wd_dataset_id, H5T_NATIVE_DOUBLE, wd_memspace, wd_dataspace_id, dxpl_id, wallDistance.data());
-
-    //close dataset and dataspaces
-    H5Dclose(wd_dataset_id);
-    H5Sclose(wd_dataspace_id);
-    H5Sclose(wd_memspace);
-
     //Create XDMF File
     xdmfFile.open((_parameters.xdmf.prefix + ".xdmf").c_str());
 
@@ -311,6 +257,11 @@ XDMFStencil::XDMFStencil(FlowField &flowField, const Parameters &parameters) : F
 }
 
 inline void XDMFStencil::apply(FlowField &flowField, int i, int j) {
+    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+    {
+        return;
+    }
+    
     if ((flowField.getFlags().getValue(i, j) & OBSTACLE_SELF) == 0) {
         // Get pressure and velocity
         FLOAT pressure;
@@ -334,6 +285,11 @@ inline void XDMFStencil::apply(FlowField &flowField, int i, int j) {
 }
 
 inline void XDMFStencil::apply(FlowField &flowField, int i, int j, int k) {
+    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+    {
+        return;
+    }
+    
     if ((flowField.getFlags().getValue(i, j, k) & OBSTACLE_SELF) == 0) {
         // Get pressure and velocity
         FLOAT pressure;
@@ -359,10 +315,10 @@ inline void XDMFStencil::apply(FlowField &flowField, int i, int j, int k) {
 }
 
 void XDMFStencil::write(int timestep) {
-//    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
-//    {
-//        return;
-//    }
+    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+    {
+        return;
+    }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //write velocity
@@ -569,4 +525,67 @@ void XDMFStencil::write(int timestep) {
     //Set cursor position so new timestep can be inserted
     //TODO Update offset to include temporal grid
     xdmfFile.seekp(-32, std::ios_base::cur); // This should actually be a good value, so that we write right after the "</Grid>" closing tag.
+}
+
+void XDMFStencil::writeWallDistance(FlowField &flowField)
+{
+    if (!_parameters.xdmf.active) // If XDMF output is disabled, we don't want to write anything to disk.
+    {
+        return;
+    }
+    
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //write wallDistance
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    std::cout << "Writing wallDistance" << std::endl;
+    
+    //create dataspace and dataset
+    hsize_t wd_dims[3] = {(hsize_t) allCellsZ, (hsize_t) allCellsY, (hsize_t) allCellsX};
+    hid_t wd_dataspace_id = H5Screate_simple(3, wd_dims, nullptr);
+    hid_t wd_dataset_id = H5Dcreate(file_id, "wallDistance", H5T_NATIVE_DOUBLE, wd_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    
+    //select hyperslab of the dataspace
+    hsize_t wd_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX};
+    hsize_t wd_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t) cellsX};
+    
+    H5Sselect_hyperslab(wd_dataspace_id, H5S_SELECT_SET, wd_start, nullptr, wd_count, nullptr);
+    
+    //create a hyperslab selection of the vector in the memory
+    hsize_t wd_memspace_dims[1] = {(hsize_t) cells};
+    hid_t wd_memspace = H5Screate_simple(1, wd_memspace_dims, nullptr);
+    hsize_t wd_memory_start[1] = {0};
+    hsize_t wd_memory_count[1] = {(hsize_t) cells};
+    H5Sselect_hyperslab(wd_memspace, H5S_SELECT_SET, wd_memory_start, nullptr, wd_memory_count, nullptr);
+
+//    hsize_t wd_memspace_dims[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
+//    hid_t wd_memspace = H5Screate_simple(3, wd_memspace_dims, nullptr);
+//    hsize_t wd_memory_start[3] = {0, 0, 0};
+//    hsize_t wd_memory_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
+//    H5Sselect_hyperslab(wd_memspace, H5S_SELECT_SET, wd_memory_start, nullptr, wd_memory_count, nullptr);
+    
+    std::vector<FLOAT> wallDistance = std::vector<FLOAT>();
+    wallDistance.reserve(cells);
+    if (_parameters.geometry.dim == 2)
+        for (unsigned int j = 2; j < cellsY + 2; j++) {
+            for (unsigned int i = 2; i < cellsX + 2; i++) {
+                wallDistance.push_back(flowField.getNearestWallDistance().getScalar(i, j));
+            }
+        }
+    else
+        for (unsigned int k = 2; k < cellsZ + 2; k++) {
+            for (unsigned int j = 2; j < cellsY + 2; j++) {
+                for (unsigned int i = 2; i < cellsX + 2; i++) {
+//                    std::cout << "wallDistance=" << flowField.getNearestWallDistance().getScalar(i, j, k) << std::endl;
+                    wallDistance.push_back(flowField.getNearestWallDistance().getScalar(i, j, k));
+                }
+            }
+        }
+    
+    //write vector to dataset
+    H5Dwrite(wd_dataset_id, H5T_NATIVE_DOUBLE, wd_memspace, wd_dataspace_id, dxpl_id, wallDistance.data());
+    
+    //close dataset and dataspaces
+    H5Dclose(wd_dataset_id);
+    H5Sclose(wd_dataspace_id);
+    H5Sclose(wd_memspace);
 }

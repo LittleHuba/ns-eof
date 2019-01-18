@@ -70,6 +70,13 @@ public:
      * @param timeStep The timestep to write
      */
     virtual void write(int timeStep);
+    
+    /**
+     * Write the wall distance in the XDMF file.
+     * This function needs to be called after the initialization of the flow field (and therefore
+     * also of the wall distance) has taken place.
+     */
+    void writeWallDistance(FlowField &flowField);
 
 };
 
