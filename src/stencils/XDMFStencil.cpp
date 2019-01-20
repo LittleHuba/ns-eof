@@ -409,21 +409,18 @@ void XDMFStencil::write(int timestep) {
         H5Dclose(vc_dataset_id);
         H5Sclose(vc_dataspace_id);
         H5Sclose(vc_memspace);
-    
-        //reinit buffers for attributes
-        velocity.clear();
-        pressure.clear();
         viscosity.clear();
     }
+
+    //reinit buffers for attributes
+    velocity.clear();
+    pressure.clear();
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Add timestep to XDMF-File
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (_parameters.parallel.rank != 0)
     {
-        velocity.clear();
-        pressure.clear();
-        viscosity.clear();
         return;
     }
     
