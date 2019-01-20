@@ -32,6 +32,15 @@ Both these scripts link the executable as `ns` in the current working directory,
 
 In case you want to customize your build or need to point non-standard library paths, simply copy one of the scripts and adjust it to your needs.
 
+## Enable XDMF output
+The current version of `NS-EOF` supports XDMF output. To enable it, simply add an `xdmf` tag as follows:
+```
+<xdmf interval="0.1">outputFile_basename</xdmf>
+```
+The given basename should not contain any extension, as it will be used as a base name for both the `.xdmf` and `.h5` output files.
+
+**NOTE**: remember to comment or delete any existing `vtk` tag from your configuration, **otherwise both outputs will be generated!**
+
 ## Run
 Running `ns` requires MPI, even for a single process run.
 
