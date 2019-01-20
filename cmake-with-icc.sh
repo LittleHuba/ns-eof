@@ -4,6 +4,7 @@ if command -v module 1>/dev/null 2>&1; then
     # Load modules here if needed
     module unload boost
     module load boost/1.61_icc
+    module load hdf5/1.10.2-intel-impi
 fi
 
 export CC=icc
