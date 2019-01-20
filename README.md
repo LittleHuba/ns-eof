@@ -32,6 +32,13 @@ Both these scripts link the executable as `ns` in the current working directory,
 
 In case you want to customize your build or need to point non-standard library paths, simply copy one of the scripts and adjust it to your needs.
 
+### In case of not linking HDF5 library
+In case your CMake has troubles locating your HDF5 installation, you can add the following lines to the `src/CMakeLists.txt` file right after the existing `include_directories()` directives:
+```
+include_directories(<path/to/HDF5/installation>/include)
+set(HDF5_LIBRARIES <path/to/HDF5/installation>/lib/libhdf5.a)
+```
+
 ## Enable XDMF output
 The current version of `NS-EOF` supports XDMF output. To enable it, simply add an `xdmf` tag as follows:
 ```
