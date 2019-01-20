@@ -377,39 +377,44 @@ void XDMFStencil::write(int timestep) {
     H5Dclose(p_dataset_id);
     H5Sclose(p_dataspace_id);
     H5Sclose(p_memspace);
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //write viscosity
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    //create dataspace and dataset
-    hsize_t vc_dims[3] = {static_cast<hsize_t>(allCellsZ), static_cast<hsize_t>(allCellsY), static_cast<hsize_t>(allCellsX)};
-    hid_t vc_dataspace_id = H5Screate_simple(3, vc_dims, nullptr);
-    hid_t vc_dataset_id = H5Dcreate(file_id, ("viscosity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE, vc_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-    //select hyperslab of the dataspace
-    hsize_t vc_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t)firstCornerX};
-    hsize_t vc_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t)cellsX};
-    H5Sselect_hyperslab(vc_dataspace_id, H5S_SELECT_SET, vc_start, nullptr, vc_count, nullptr);
-
-    //create a hyperslab selection of the vector in the memory
-    hsize_t vc_memspace_dims[1] = {(hsize_t) cells};
-    hid_t vc_memspace = H5Screate_simple(1, vc_memspace_dims, nullptr);
-    hsize_t vc_memory_start[1] = {0};
-    hsize_t vc_memory_count[1] = {(hsize_t) cells};
-    H5Sselect_hyperslab(vc_memspace, H5S_SELECT_SET, vc_memory_start, nullptr, vc_memory_count, nullptr);
-
-    //write vector to dataset
-    H5Dwrite(vc_dataset_id, H5T_NATIVE_DOUBLE, vc_memspace, vc_dataspace_id, dxpl_id, viscosity.data());
-
-    //close dataset and dataspaces
-    H5Dclose(vc_dataset_id);
-    H5Sclose(vc_dataspace_id);
-    H5Sclose(vc_memspace);
-
-    //reinit buffers for attributes
-    velocity.clear();
-    pressure.clear();
-    viscosity.clear();
+    
+    if (_parameters.simulation.type == "turbulence")
+    {
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //write viscosity
+        //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //create dataspace and dataset
+        hsize_t vc_dims[3] = {static_cast<hsize_t>(allCellsZ), static_cast<hsize_t>(allCellsY),
+                              static_cast<hsize_t>(allCellsX)};
+        hid_t vc_dataspace_id = H5Screate_simple(3, vc_dims, nullptr);
+        hid_t vc_dataset_id = H5Dcreate(file_id, ("viscosity" + std::to_string(timestep)).c_str(), H5T_NATIVE_DOUBLE,
+                                        vc_dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    
+        //select hyperslab of the dataspace
+        hsize_t vc_start[3] = {(hsize_t) firstCornerZ, (hsize_t) firstCornerY, (hsize_t) firstCornerX};
+        hsize_t vc_count[3] = {(hsize_t) writeCellsZ, (hsize_t) cellsY, (hsize_t) cellsX};
+        H5Sselect_hyperslab(vc_dataspace_id, H5S_SELECT_SET, vc_start, nullptr, vc_count, nullptr);
+    
+        //create a hyperslab selection of the vector in the memory
+        hsize_t vc_memspace_dims[1] = {(hsize_t) cells};
+        hid_t vc_memspace = H5Screate_simple(1, vc_memspace_dims, nullptr);
+        hsize_t vc_memory_start[1] = {0};
+        hsize_t vc_memory_count[1] = {(hsize_t) cells};
+        H5Sselect_hyperslab(vc_memspace, H5S_SELECT_SET, vc_memory_start, nullptr, vc_memory_count, nullptr);
+    
+        //write vector to dataset
+        H5Dwrite(vc_dataset_id, H5T_NATIVE_DOUBLE, vc_memspace, vc_dataspace_id, dxpl_id, viscosity.data());
+    
+        //close dataset and dataspaces
+        H5Dclose(vc_dataset_id);
+        H5Sclose(vc_dataspace_id);
+        H5Sclose(vc_memspace);
+    
+        //reinit buffers for attributes
+        velocity.clear();
+        pressure.clear();
+        viscosity.clear();
+    }
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Add timestep to XDMF-File
@@ -467,17 +472,23 @@ void XDMFStencil::write(int timestep) {
                  << "            <Attribute Name=\"pressure\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                  << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCellsZ << " " << allCellsY << " " << allCellsX
                  << "\">" + _parameters.xdmf.prefix + ".h5:/pressure0</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"wallDistance\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCellsZ << " " << allCellsY << " " << allCellsX
-                 << "\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 << "            <Attribute Name=\"viscosity\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
-                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCellsZ << " " << allCellsY << " " << allCellsX
-                 << "\">" + _parameters.xdmf.prefix + ".h5:/viscosity0</DataItem>" << std::endl
-                 << "            </Attribute>" << std::endl
-                 
-                 << "        </Grid>" << std::endl
+                 << "            </Attribute>" << std::endl;
+        
+        if (_parameters.simulation.type == "turbulence")
+        {
+            xdmfFile << "            <Attribute Name=\"wallDistance\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
+                     << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\""
+                     << allCellsZ << " " << allCellsY << " " << allCellsX
+                     << "\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
+                     << "            </Attribute>" << std::endl
+                     << "            <Attribute Name=\"viscosity\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
+                     << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\""
+                     << allCellsZ << " " << allCellsY << " " << allCellsX
+                     << "\">" + _parameters.xdmf.prefix + ".h5:/viscosity0</DataItem>" << std::endl
+                     << "            </Attribute>" << std::endl;
+        }
+        
+        xdmfFile << "        </Grid>" << std::endl
                  << "    </Grid>" << std::endl
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";
@@ -503,17 +514,23 @@ void XDMFStencil::write(int timestep) {
                 << "            <Attribute Name=\"pressure\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
                 << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCellsZ << " " << allCellsY << " " << allCellsX
                 << "\">" + _parameters.xdmf.prefix + ".h5:/pressure" << timestep << "</DataItem>" << std::endl
-                << "            </Attribute>" << std::endl
-                << "            <Attribute Name=\"viscosity\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
-                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCellsZ << " " << allCellsY << " " << allCellsX
-                << "\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
-                << "            </Attribute>" << std::endl
-                << "            <Attribute Name=\"wallDistance\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
-                << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\"" << allCellsZ << " " << allCellsY << " " << allCellsX
-                << "\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
-                << "            </Attribute>" << std::endl
+                << "            </Attribute>" << std::endl;
+    
+        if (_parameters.simulation.type == "turbulence")
+        {
+            xdmfFile << "            <Attribute Name=\"viscosity\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
+                     << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\""
+                     << allCellsZ << " " << allCellsY << " " << allCellsX
+                     << "\">" + _parameters.xdmf.prefix + ".h5:/viscosity" << timestep << "</DataItem>" << std::endl
+                     << "            </Attribute>" << std::endl
+                     << "            <Attribute Name=\"wallDistance\" Type=\"Scalar\" Center=\"Cell\">" << std::endl
+                     << "                <DataItem NumberType=\"Float\" Precision=\"8\" Format=\"HDF\" Dimensions=\""
+                     << allCellsZ << " " << allCellsY << " " << allCellsX
+                     << "\">" + _parameters.xdmf.prefix + ".h5:/wallDistance</DataItem>" << std::endl
+                     << "            </Attribute>" << std::endl;
+        }
                 
-                << "        </Grid>" << std::endl
+        xdmfFile << "        </Grid>" << std::endl
                  << "    </Grid>" << std::endl
                  << "    </Domain>" << std::endl
                  << "</Xdmf>";
